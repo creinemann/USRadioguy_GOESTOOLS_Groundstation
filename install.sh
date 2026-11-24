@@ -127,10 +127,10 @@ fi
 # ------------------------------------------------------------------ receiver config
 say "Receiver configuration (/etc/goestools)"
 sudo mkdir -p /etc/goestools
-write_conf() { # src dest
+write_conf() { # src dest  (always world-readable: goesrecv/goesproc run as $RUN_USER)
 	if [ -f "$2" ] && [ "${OVERWRITE_CONF:-no}" != yes ]; then
-		sudo cp "$1" "$2.new"; warn "$2 exists - kept yours, new version saved as $2.new"
-	else sudo cp "$1" "$2"; ok "$2"; fi
+		sudo install -m 644 "$1" "$2.new"; warn "$2 exists - kept yours, new version saved as $2.new"
+	else sudo install -m 644 "$1" "$2"; ok "$2"; fi
 }
 TMPC="$(mktemp)"
 sed -e "s/^source = \"rtlsdr\"/source = \"$SDR\"/" "$REPO/goestools/goesrecv.conf" > "$TMPC"
@@ -147,6 +147,7 @@ else
 fi
 write_conf "$TMPC" /etc/goestools/goesrecv.conf; rm -f "$TMPC"
 write_conf "$REPO/goestools/goesproc-$SAT.conf" /etc/goestools/goesproc-goesr.conf
+sudo chmod 644 /etc/goestools/*.conf   # fixes configs written by older installer versions
 
 sudo mkdir -p "$DATA" && sudo chown "$RUN_USER": "$DATA" && sudo chmod 755 "$DATA"
 ok "imagery folder $DATA"
