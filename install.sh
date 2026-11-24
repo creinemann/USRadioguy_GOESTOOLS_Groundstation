@@ -70,7 +70,7 @@ ask SAT        "Satellite this Pi receives: goes19 (East) or goes18 (West, inclu
 case "$SAT" in goes19|goes18) ;; 19) SAT=goes19;; 18) SAT=goes18;; *) die "Satellite must be goes19 or goes18";; esac
 ask SDR        "SDR type: rtlsdr or airspy" "rtlsdr"
 case "$SDR" in rtlsdr|airspy) ;; *) die "SDR must be rtlsdr or airspy";; esac
-ask GAIN       "SDR gain (RTL-SDR ~30, Airspy ~18; tune later)" "$([ "$SDR" = airspy ] && echo 18 || echo 30)"
+ask GAIN       "SDR gain in dB (with an LNA/SAWbird ~5-10, no LNA ~30; tune later)" "$([ "$SDR" = airspy ] && echo 18 || echo 6)"
 ask BIAS_TEE   "Power your LNA from the SDR (bias tee)? yes/no" "no"
 ask STATION    "Station name (shown on the website)" "My Ground Station"
 ask LOCATION   "Location text (e.g. Anytown, USA)" ""
