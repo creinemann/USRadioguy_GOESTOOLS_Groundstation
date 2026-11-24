@@ -16,7 +16,7 @@ It walks you through everything, from flashing the SD card to seeing your
 first image.
 
 Quick version:
-1. Flash a **32 GB+** microSD card with
+1. Flash a minimum of **32 GB+** microSD card with
    [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choose
    **Raspberry Pi OS (other) → Raspberry Pi OS Lite (64-bit)**.
 2. In Imager's settings, set a hostname, username and password, and Wi-Fi
