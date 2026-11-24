@@ -30,6 +30,22 @@ Quick version:
 
 > NOTE: AI (Claude) was used to help streamline and check code.
 
+## ☕ Help keep USRadioguy on the air
+Everything here is **free**: the software, the install script, the color
+tables, the Himawari additions and the guides. Keeping it running isn't
+free, though. It takes web servers and hosting, domain fees, the
+ground-station hardware, and many hours testing every new Raspberry Pi OS
+release and goestools update, so your install just works.
+
+**If this project has helped you get on the air, I could really use your
+help.** Even the price of a cup of coffee makes a real difference and
+keeps the updates coming.
+
+### [☕ Support USRadioguy on Ko-fi](https://ko-fi.com/usradioguy)
+
+*Thank you. Every bit of support goes straight back into the station and
+the software. — Carl*
+
 ## What you get
 - **goestools, USRadioguy edition**
   ([creinemann/goestools](https://github.com/creinemann/goestools)),
@@ -162,5 +178,7 @@ a separate computer:
   License; see the `OFL-*.txt` files.
 - SDO imagery courtesy of NASA/SDO. SUVI and space weather products
   courtesy of NOAA.
+
+If you find this useful, please [support it on Ko-fi](https://ko-fi.com/usradioguy).
 
 Licensed under the **GNU General Public License v3**; see [LICENSE](LICENSE).

@@ -229,6 +229,6 @@ cat <<EOF
          https://usradioguy.com/
 
    Please visit usradioguy.com and donate today to help keep the site
-   and software running!
+   and software running!   ☕  https://ko-fi.com/usradioguy
 
 EOF
