@@ -1,0 +1,69 @@
+/* 
+ * Copyright 2022-2023 Jamie Vital
+ * This software is licensed under the GNU General Public License
+ * 
+ * This file is part of Vitality GOES.
+ * Vitality GOES is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * Vitality GOES is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License
+ * along with Vitality GOES.  If not, see <http://www.gnu.org/licenses/>.
+ */
+body
+{
+	background-image: url('images/earth.jpg');
+	background-attachment: fixed;
+	background-size: cover;
+}
+.topBar
+{
+	background-color: black;
+	background-image: url('images/usradioguyweblogoLIGHT.png');
+	background-position: center;
+	background-repeat: no-repeat;
+}
+.prettyBox
+{
+	background: #11152b;
+}
+.menuItem.selected
+{
+	background-color: #970003;
+}
+.menuItem.selected:hover
+{
+	background-color: #7c0002;
+}
+.forecastCard
+{
+	border-left: solid 1px #822323;
+}
+.forecastCard:last-child
+{
+	border-right: solid 1px #822323;
+}
+.otherEmwinBody::-webkit-scrollbar-thumb,
+.forcastCardHolder::-webkit-scrollbar-thumb
+{
+	background: #822323;
+}
+@media (max-width: 1000px)
+{
+	.topBar
+	{
+		background-position: 75% 50%;
+	}  
+}
+@media (max-width: 880px)
+{
+	.topBar
+	{
+		background-image: none;
+	}  
+}

@@ -1,0 +1,666 @@
+/*
+ * Apollo Panel (1969) - theme for Vitality GOES (USradioguy)
+ * Vitality GOES is Copyright 2022-2023 Jamie Vital, GPL v3.
+ * This theme only overrides styles.css; it changes no program files.
+ *
+ * Card colors from your .ini files (color = #xxxxxx) become the
+ * color of each card's indicator lamp - see near the bottom.
+ */
+
+:root
+{
+	--ap-panel: #5b6165;
+	--ap-panel-dk: #464b4f;
+	--ap-panel-lt: #6c7276;
+	--ap-bezel: #1a1c1d;
+	--ap-label: #f1f0e8;
+	--ap-dsky: #8bff6a;
+	--ap-dsky-bg: #08120a;
+	--ap-amber: #ffb22e;
+	--ap-red: #ff4a3a;
+	--ap-text: #ecebe3;
+	--ap-screw: radial-gradient(circle at 10px 10px,
+		#e2e4e5 0 1px, #9ba0a3 1.6px 3.4px, #2a2d2f 3.9px 4.4px, transparent 4.9px);
+	--ap-brushed: repeating-linear-gradient(90deg,
+		rgba(255,255,255,0.018) 0 1px, rgba(0,0,0,0.018) 1px 3px);
+}
+
+html
+{
+	scrollbar-color: #9ba0a3 #2a2d2f;
+}
+body
+{
+	background-color: #33383b;
+	background-image:
+		radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.06), rgba(0,0,0,0.35) 80%),
+		var(--ap-brushed);
+	background-attachment: fixed;
+	color: var(--ap-text);
+	font-family: 'Jost', 'Futura', 'Century Gothic', sans-serif;
+	-webkit-tap-highlight-color: #8bff6a33;
+}
+
+/* ---------- Top bar: main display & keyboard window ---------- */
+.topBar
+{
+	background-color: var(--ap-panel-dk);
+	background-image: var(--ap-brushed);
+	box-shadow: inset 0 -3px 0 #2a2d2f, inset 0 1px 0 rgba(255,255,255,0.12), 0 3px 8px rgba(0,0,0,0.6);
+}
+.topBar::before,
+.topBar::after
+{
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	font-family: 'Jost', sans-serif;
+	font-weight: 600;
+	font-size: 8.5pt;
+	letter-spacing: 1.5px;
+	line-height: 1.15;
+	text-align: center;
+	padding: 6px 8px;
+	width: 78px;
+	border: 2px solid #0c0d0e;
+	box-shadow: 0 0 0 3px #7a8084;
+	border-radius: 2px;
+	white-space: pre;
+}
+/* lit green status light */
+.topBar::before
+{
+	content: "SIG\A ACQ";
+	right: 186px;
+	background: radial-gradient(circle, #cfe9c4 0%, #8fd47a 70%);
+	color: #0f2a08;
+	box-shadow: 0 0 0 3px #7a8084, 0 0 14px rgba(139,255,106,0.55);
+}
+/* lit, slowly pulsing caution light */
+.topBar::after
+{
+	content: "UPLINK\A ACTY";
+	right: 82px;
+	background: radial-gradient(circle, #fff3c9 0%, #ffbe3a 75%);
+	color: #3a2400;
+	box-shadow: 0 0 0 3px #7a8084, 0 0 16px rgba(255,178,46,0.7);
+	animation: apUplink 2.6s ease-in-out infinite;
+}
+@keyframes apUplink
+{
+	0%, 100% { filter: brightness(1); }
+	50%      { filter: brightness(0.7); }
+}
+.topBarInner
+{
+	color: var(--ap-label);
+}
+.barLogo
+{
+	color: var(--ap-label);
+	filter: drop-shadow(0 1px 0 #000);
+}
+.barTitle
+{
+	width: auto;
+	max-width: calc(100% - 420px);
+	font-family: 'DSEG14 Classic', monospace;
+	font-weight: 700;
+	font-size: 17pt;
+	text-transform: uppercase;
+	color: var(--ap-dsky);
+	text-shadow: 0 0 6px rgba(139,255,106,0.75);
+	background: var(--ap-dsky-bg);
+	padding: 7px 16px 6px 16px;
+	border: 3px solid #0c0d0e;
+	box-shadow: 0 0 0 3px #7a8084, inset 0 0 14px rgba(0,0,0,0.9);
+	border-radius: 2px;
+	letter-spacing: 1px;
+}
+.barRefresh
+{
+	position: absolute;
+	right: 20px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 40px;
+	height: 40px;
+	line-height: 40px;
+	text-align: center;
+	font-size: 14pt;
+	color: var(--ap-label);
+	background: radial-gradient(circle at 40% 35%, #3d4245, #121415 70%);
+	border-radius: 50%;
+	box-shadow: 0 0 0 3px #8a9094, 0 0 0 5px #2a2d2f, 0 3px 6px rgba(0,0,0,0.7);
+}
+.barRefresh:active
+{
+	transform: translateY(-50%) scale(0.94);
+}
+.barRefresh svg
+{
+	filter: none;
+	vertical-align: middle;
+}
+
+/* ---------- Side bar: annunciator push-buttons ---------- */
+.sideBar
+{
+	background-color: var(--ap-panel-dk);
+	background-image: var(--ap-brushed);
+	box-shadow: inset -3px 0 0 #2a2d2f, 4px 0 10px rgba(0,0,0,0.6);
+}
+.sideBar > .mainBodyPadding
+{
+	height: 120px;
+	position: relative;
+}
+.sideBar > .mainBodyPadding::after
+{
+	content: "MISSION  DISPLAYS";
+	position: absolute;
+	left: 16px;
+	right: 16px;
+	bottom: 8px;
+	font-family: 'Jost', sans-serif;
+	font-weight: 600;
+	font-size: 9pt;
+	letter-spacing: 3px;
+	text-align: center;
+	color: var(--ap-label);
+	border-top: 2px solid var(--ap-label);
+	border-left: 2px solid var(--ap-label);
+	border-right: 2px solid var(--ap-label);
+	padding-top: 5px;
+	height: 14px;
+}
+.sideBar::after
+{
+	content: "GROUND STATION  \2022  GOES HRIT";
+	display: block;
+	margin: 6px 16px 24px 16px;
+	padding-top: 6px;
+	text-align: center;
+	font-weight: 600;
+	font-size: 8pt;
+	letter-spacing: 2.5px;
+	color: var(--ap-label);
+	border-bottom: 2px solid var(--ap-label);
+	border-left: 2px solid var(--ap-label);
+	border-right: 2px solid var(--ap-label);
+	height: 16px;
+}
+.menuItem
+{
+	margin: 12px 28px;
+	padding: 12px 14px;
+	height: 22px;
+	line-height: 22px;
+	font-family: 'Jost', sans-serif;
+	font-weight: 600;
+	font-size: 10.5pt;
+	letter-spacing: 2.5px;
+	text-transform: uppercase;
+	color: #c9cbc4;
+	background: linear-gradient(#22272a, #15181a);
+	border: 2px solid #0a0b0c;
+	border-radius: 3px;
+	box-shadow: 0 0 0 4px #7a8084, 0 0 0 6px #2a2d2f, inset 0 1px 0 rgba(255,255,255,0.08);
+	transition: background 0.15s, color 0.15s;
+}
+.menuItemIconHolder
+{
+	font-size: 13pt;
+	width: 34px;
+	color: #9a9d96;
+}
+.menuItem:hover
+{
+	background: linear-gradient(#2c3236, #1d2124);
+	color: #ffffff;
+}
+.menuItem.selected,
+.menuItem.selected:hover
+{
+	background: radial-gradient(ellipse at 50% 50%, #fff6d6 0%, #ffc54d 85%);
+	color: #3a2400;
+	box-shadow: 0 0 0 4px #7a8084, 0 0 0 6px #2a2d2f, 0 0 18px rgba(255,178,46,0.65);
+}
+.menuItem.selected .menuItemIconHolder
+{
+	color: #3a2400;
+}
+
+/* ---------- Cards: screwed-down panel plates ---------- */
+.prettyBox
+{
+	--lamp: var(--ap-dsky);
+	position: relative;
+	color: var(--ap-text);
+	background-color: var(--ap-panel);
+	background-image: var(--ap-screw), var(--ap-screw), var(--ap-screw), var(--ap-screw), var(--ap-brushed);
+	background-size: 20px 20px, 20px 20px, 20px 20px, 20px 20px, auto;
+	background-position: 0 0, 100% 0, 0 100%, 100% 100%, 0 0;
+	background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+	border: 1px solid #25282a;
+	border-radius: 4px;
+	box-shadow: inset 1px 1px 0 rgba(255,255,255,0.18), inset -1px -1px 0 rgba(0,0,0,0.45), 0 3px 8px rgba(0,0,0,0.55);
+	padding: 18px 22px;
+	box-sizing: border-box;
+}
+/* Card colors from the .ini files are set inline; keep the panel gray */
+.prettyBox[style*="background-color"]
+{
+	background-color: var(--ap-panel) !important;
+}
+/* engraved label with white bracket lines */
+.prettyBoxHeader
+{
+	font-family: 'Jost', sans-serif;
+	font-weight: 600;
+	font-size: 10pt;
+	letter-spacing: 2.5px;
+	text-transform: uppercase;
+	color: var(--ap-label);
+	padding: 7px 40px 7px 12px;
+	border: 2px solid var(--ap-label);
+	border-bottom: none;
+	text-shadow: 0 1px 0 rgba(0,0,0,0.5);
+}
+.prettyBoxHeader .fa
+{
+	color: var(--ap-label);
+	margin-right: 10px;
+}
+/* indicator lamp */
+.prettyBoxHeader::after
+{
+	content: "";
+	position: absolute;
+	right: 12px;
+	top: 50%;
+	width: 12px;
+	height: 12px;
+	margin-top: -6px;
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 35%, #ffffff 0 12%, var(--lamp) 45%);
+	box-shadow: 0 0 0 2px #1a1c1d, 0 0 0 3px #8a9094, 0 0 10px var(--lamp);
+}
+.prettyBox:has(> .prettyBoxContent[style*="none"]) > .prettyBoxHeader
+{
+	border-bottom: 2px solid var(--ap-label);
+}
+.prettyBox:has(> .prettyBoxContent[style*="none"]) > .prettyBoxHeader::after
+{
+	background: radial-gradient(circle at 35% 35%, #6a6e6a 0 12%, #2b2f2c 60%);
+	box-shadow: 0 0 0 2px #1a1c1d, 0 0 0 3px #8a9094;
+}
+.prettyBoxContent
+{
+	border: 2px solid var(--ap-label);
+	border-top: 1px solid rgba(241,240,232,0.35);
+	padding: 16px 16px 6px 16px;
+}
+.prettyBoxContent:last-child
+{
+	padding: 16px;
+}
+.prettyBoxContent:only-child
+{
+	border-top: 2px solid var(--ap-label);
+}
+.prettyBox.emwinLoader
+{
+	background-color: var(--ap-panel-dk);
+}
+.prettyBox.emwinLoader.highlighted
+{
+	box-shadow: 0 0 0 2px var(--ap-amber), 0 0 16px rgba(255,178,46,0.5);
+}
+.prettyBoxList
+{
+	border-bottom: 1px solid rgba(241,240,232,0.35);
+}
+.weatherHeader, .hurricaneForecastHeader
+{
+	font-weight: 600;
+	font-size: 11pt;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	color: var(--ap-label);
+}
+.weatherLeft
+{
+	font-weight: 600;
+	letter-spacing: 1.5px;
+	text-transform: uppercase;
+	font-size: 9pt;
+	color: #d6d5cd;
+}
+.weatherRight
+{
+	font-family: 'Share Tech Mono', monospace;
+	color: var(--ap-dsky);
+	text-shadow: 0 0 4px rgba(139,255,106,0.5);
+}
+.adminMessageBody, .emwinMessageBody .prettyBoxList:first-child
+{
+	font-family: 'Share Tech Mono', monospace;
+	font-size: 10pt;
+	color: var(--ap-dsky);
+	background: var(--ap-dsky-bg);
+	text-shadow: 0 0 4px rgba(139,255,106,0.4);
+}
+
+/* ---------- Images & readouts ---------- */
+.goesimg
+{
+	box-sizing: border-box;
+	border: 6px solid #0d0f10;
+	box-shadow: 0 0 0 2px #8a9094, inset 0 0 12px #000;
+	border-radius: 2px;
+}
+.goeslabel, .lgLabel
+{
+	display: block;
+	margin: 10px auto 4px auto;
+	padding: 6px 10px 5px 10px;
+	font-style: normal;
+	font-family: 'DSEG14 Classic', monospace;
+	font-size: 9pt;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: var(--ap-dsky);
+	text-shadow: 0 0 5px rgba(139,255,106,0.7);
+	background: var(--ap-dsky-bg);
+	border: 2px solid #0c0d0e;
+	box-shadow: 0 0 0 2px #7a8084, inset 0 0 8px #000;
+}
+.mapLinks
+{
+	padding: 14px 0 4px 0;
+}
+.spanLink
+{
+	display: inline-block;
+	margin: 0 8px;
+	padding: 5px 14px;
+	font-family: 'Jost', sans-serif;
+	font-weight: 600;
+	font-size: 9pt;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: #c9cbc4;
+	background: linear-gradient(#22272a, #15181a);
+	border: 2px solid #0a0b0c;
+	border-radius: 2px;
+	box-shadow: 0 0 0 3px #7a8084;
+}
+.spanLink:hover
+{
+	color: #ffffff;
+}
+.spanLink.selected
+{
+	background: radial-gradient(ellipse, #e8ffdc 0%, #8fe370 85%);
+	color: #0f2a08;
+	box-shadow: 0 0 0 3px #7a8084, 0 0 12px rgba(139,255,106,0.55);
+	font-weight: 600;
+}
+.spanLink:after
+{
+	content: none;
+}
+
+/* ---------- Forecast strip ---------- */
+.forecastCard
+{
+	border-left: solid 1px rgba(241,240,232,0.5);
+}
+.forecastCard:last-child
+{
+	border-right: solid 1px rgba(241,240,232,0.5);
+}
+.forecastHeader
+{
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	font-size: 9pt;
+	border-bottom: solid 2px var(--ap-label);
+}
+
+/* ---------- Form controls ---------- */
+.prettyBox input, .prettyBox select
+{
+	border-radius: 2px;
+}
+.prettyBox input[type="text"], .prettyBox input[type="number"], .prettyBox select
+{
+	font-family: 'Share Tech Mono', monospace;
+	font-size: 11pt;
+	color: var(--ap-dsky);
+	background: var(--ap-dsky-bg);
+	border: 2px solid #0c0d0e;
+	box-shadow: 0 0 0 2px #7a8084, inset 0 0 6px #000;
+	text-shadow: 0 0 4px rgba(139,255,106,0.5);
+	padding: 5px 8px;
+	margin: 4px;
+}
+.prettyBox select
+{
+	appearance: none;
+	padding-right: 26px;
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='rgb(139,255,106)'><polygon points='0,0 10,0 5,6'/></svg>");
+	background-repeat: no-repeat;
+	background-position: right 9px center;
+}
+.prettyBox option
+{
+	background: var(--ap-dsky-bg);
+	color: var(--ap-dsky);
+}
+.prettyBox input[type="button"], .prettyBox input[type="submit"]
+{
+	font-family: 'Jost', sans-serif;
+	font-weight: 600;
+	font-size: 9pt;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: #1a1c1d;
+	background: linear-gradient(#b6bbbe, #7f8589);
+	border: 1px solid #1a1c1d;
+	box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 2px 0 #1a1c1d;
+	padding: 6px 14px;
+	margin: 4px;
+	cursor: pointer;
+}
+.prettyBox input[type="button"]:enabled:active
+{
+	transform: translateY(2px);
+	box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+}
+.prettyBox input:focus, .prettyBox select:focus
+{
+	outline: none;
+	box-shadow: 0 0 0 2px var(--ap-amber), inset 0 0 6px #000;
+}
+.prettyBox input:disabled, .prettyBox select:disabled
+{
+	opacity: 0.45;
+}
+/* radio buttons & checkboxes as indicator lamps */
+.prettyBox input[type="radio"], .prettyBox input[type="checkbox"]
+{
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	padding: 0;
+	margin: 6px 8px 6px 4px;
+	border-radius: 50%;
+	vertical-align: middle;
+	background: radial-gradient(circle at 35% 35%, #6a6e6a 0 12%, #2b2f2c 60%);
+	box-shadow: 0 0 0 2px #1a1c1d, 0 0 0 3px #8a9094;
+	cursor: pointer;
+}
+.prettyBox input[type="checkbox"]
+{
+	border-radius: 2px;
+}
+.prettyBox input[type="radio"]:checked, .prettyBox input[type="checkbox"]:checked
+{
+	background: radial-gradient(circle at 35% 35%, #ffffff 0 12%, var(--ap-dsky) 50%);
+	box-shadow: 0 0 0 2px #1a1c1d, 0 0 0 3px #8a9094, 0 0 10px var(--ap-dsky);
+}
+.autoFilterPicklistHolder
+{
+	border: 2px solid #0c0d0e;
+	box-shadow: 0 0 0 2px #7a8084;
+	background: var(--ap-dsky-bg);
+	color: var(--ap-dsky);
+	font-family: 'Share Tech Mono', monospace;
+}
+.autoFilterPicklist
+{
+	border-top: 1px solid #2c4a2c;
+}
+.autoFilterSearchHolder input:enabled
+{
+	box-shadow: none !important;
+	border: none !important;
+}
+.autoFilterItem:hover
+{
+	background: #143018;
+}
+.autoFilterItem.selected
+{
+	background: var(--ap-dsky);
+	color: var(--ap-dsky-bg);
+}
+.otherEmwinDeleteHolder .fa-trash-alt
+{
+	color: var(--ap-red);
+}
+
+/* ---------- Errors & alerts ---------- */
+.errorMessage
+{
+	color: var(--ap-label);
+	font-weight: 600;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+}
+.errorMessage .fa
+{
+	color: var(--ap-red);
+	filter: drop-shadow(0 0 12px rgba(255,74,58,0.6));
+}
+/* Weather alerts: caution & warning panel with striped trim */
+.weatherAlert
+{
+	border-radius: 4px;
+	border: none;
+	padding-top: 26px;
+}
+.weatherAlert::before
+{
+	content: "";
+	position: absolute;
+	left: 22px;
+	right: 22px;
+	top: 8px;
+	height: 10px;
+	background: repeating-linear-gradient(-45deg, var(--stripe, #ffb22e) 0 8px, #111 8px 16px);
+	border: 1px solid #111;
+}
+.weatherAlert.red, .weatherAlert.blue, .weatherAlert.amber, .weatherAlert.green,
+.weatherAlert.purple, .weatherAlert.teal, .weatherAlert.brown
+{
+	background-color: var(--ap-panel-dk);
+	border: none;
+}
+.weatherAlert .prettyBoxContent
+{
+	font-family: 'Share Tech Mono', monospace;
+	color: var(--stripe, #ffb22e);
+	background: #111;
+}
+.weatherAlert.red    { --stripe: #ff4a3a; }
+.weatherAlert.amber  { --stripe: #ffb22e; }
+.weatherAlert.blue   { --stripe: #6fb6ff; }
+.weatherAlert.green  { --stripe: #8bff6a; }
+.weatherAlert.purple { --stripe: #d08cff; }
+.weatherAlert.teal   { --stripe: #4fe0d6; }
+.weatherAlert.brown  { --stripe: #d6a35a; }
+
+/* ---------- Your .ini card colors -> indicator lamp color ----------
+   Browsers report inline colors as rgb(), so match on those.         */
+.prettyBox[style*="rgb(1, 58, 32)"]    { --lamp: #5fd0ff; }  /* #013A20 GOES-18 */
+.prettyBox[style*="rgb(187, 118, 0)"]  { --lamp: #ffb22e; }  /* #bb7600 */
+.prettyBox[style*="rgb(217, 135, 6)"]  { --lamp: #ffb22e; }  /* #d98706 */
+.prettyBox[style*="rgb(245, 155, 0)"]  { --lamp: #ffc64d; }  /* #f59b00 */
+.prettyBox[style*="rgb(176, 145, 9)"]  { --lamp: #ffe14d; }  /* #b09109 */
+.prettyBox[style*="rgb(179, 39, 4)"]   { --lamp: #ff4a3a; }  /* #b32704 Himawari */
+.prettyBox[style*="rgb(137, 207, 240)"]{ --lamp: #9fdcff; }  /* #89CFF0 */
+.prettyBox[style*="rgb(8, 143, 143)"]  { --lamp: #4fe0d6; }  /* #088F8F */
+.prettyBox[style*="rgb(59, 107, 104)"] { --lamp: #4fe0d6; }  /* #3b6b68 */
+.prettyBox[style*="rgb(71, 140, 92)"]  { --lamp: #b6ff8a; }  /* #478C5C */
+.prettyBox[style*="rgb(6, 191, 6)"]    { --lamp: #8bff6a; }  /* #06BF06 */
+
+/* ---------- Scrollbars ---------- */
+::-webkit-scrollbar-track
+{
+	background: #2a2d2f;
+}
+::-webkit-scrollbar-thumb
+{
+	background: linear-gradient(90deg, #b6bbbe, #7f8589);
+	border: 1px solid #1a1c1d;
+}
+::-webkit-scrollbar-button:vertical
+{
+	background-color: #3a3f42;
+}
+::-webkit-scrollbar-button:vertical:hover
+{
+	background-color: #4a5054;
+}
+.otherEmwinBody::-webkit-scrollbar-thumb,
+.forcastCardHolder::-webkit-scrollbar-thumb
+{
+	background: #9ba0a3;
+}
+
+/* ---------- Small screens ---------- */
+@media (max-width: 1000px)
+{
+	.topBar::before
+	{
+		display: none;
+	}
+	.barTitle
+	{
+		max-width: calc(100% - 300px);
+	}
+}
+@media (max-width: 700px)
+{
+	.topBar::after
+	{
+		display: none;
+	}
+	.barTitle
+	{
+		font-size: 12pt;
+		max-width: calc(100% - 130px);
+	}
+}
+@media (max-height: 775px)
+{
+	.menuItem
+	{
+		margin: 9px 28px;
+		padding: 8px 12px;
+		font-size: 9.5pt;
+	}
+}

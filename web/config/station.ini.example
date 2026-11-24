@@ -1,0 +1,56 @@
+; =====================================================================
+; Station settings for the USRadioguy additions (lab view, Ground
+; Station HUD, receiver stats). Copy to station.ini and edit.
+; This folder is blocked from the web, so keys here stay private.
+; =====================================================================
+
+[site]
+name     = "My Ground Station"
+location = "Anytown, USA"
+; Shown under each satellite on the lab Overview page
+credit   = "All GOES imagery and data was received by this ground station."
+; Lab page footer
+footer   = "Imagery received on the GOES HRIT downlink (1694.1 MHz), decoded with goestools."
+; Optional Google Analytics measurement ID (G-XXXXXXXXXX). Leave empty for none.
+analytics_id = ""
+
+[pc]
+; Disks to show on the Ground Station page, comma separated.
+; Linux: mount points, e.g. "/, /mnt/data". Windows: drive letters, e.g. "C:, E:"
+disks = "/"
+
+[media]
+; Optional: download the latest SDO / SUVI / space-weather images and videos
+; for the Solar menu (see download_media.php). Leave solar_dir empty to turn off.
+solar_dir = ""
+; Text stamped on SUVI images; {timestamp} is replaced with the image time
+label = "{timestamp}"
+
+; ---------------------------------------------------------------------
+; One [receiver.<id>] section per goesrecv receiver.
+;   host   address of the Pi running goesrecv (stats on ports 6001/6002,
+;          see the [demodulator/decoder.stats_publisher] sections of goesrecv.conf)
+;   local  true if this website runs ON that Pi: its health (CPU,
+;          temperature, memory, disk) is then read directly, no Grafana needed
+;   grafana/datasource/key  optional, for a remote Pi with Grafana + Telegraf:
+;          a read-only Grafana "Viewer" API key. Leave empty if unused.
+; ---------------------------------------------------------------------
+[receiver.east]
+label  = "GOES-19 (EAST) HRIT 1694.1"
+sat    = "GOES-19"
+where  = "East"
+host   = "127.0.0.1"
+local  = true
+grafana    = ""
+datasource = 0
+key        = ""
+
+;[receiver.west]
+;label  = "GOES-18 (WEST) HRIT 1694.1"
+;sat    = "GOES-18"
+;where  = "West"
+;host   = "192.168.1.50"
+;local  = false
+;grafana    = "http://192.168.1.50:3000"
+;datasource = 1
+;key        = ""

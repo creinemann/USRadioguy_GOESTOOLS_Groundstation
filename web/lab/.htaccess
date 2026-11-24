@@ -1,0 +1,6 @@
+# Only allow the Lab page to be shown inside a frame on this site.
+# To let your own website embed it, add its address after 'self', e.g.
+#   frame-ancestors 'self' https://example.com https://*.example.com
+<IfModule mod_headers.c>
+    Header always set Content-Security-Policy "frame-ancestors 'self'"
+</IfModule>

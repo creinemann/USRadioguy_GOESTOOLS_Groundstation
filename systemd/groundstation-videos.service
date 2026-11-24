@@ -1,0 +1,11 @@
+[Unit]
+Description=Ground station - rebuild 24-hour video loops
+
+[Service]
+Type=oneshot
+User=@USER@
+ExecStart=/usr/bin/python3 @REPO@/scripts/create-24h-videos.py --config @REPO@/scripts/video24config.ini
+# Stay out of the way of goesrecv/goesproc
+Nice=19
+IOSchedulingClass=idle
+CPUQuota=150%

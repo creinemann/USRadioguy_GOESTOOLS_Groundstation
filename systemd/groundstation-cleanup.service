@@ -1,0 +1,9 @@
+[Unit]
+Description=Ground station - delete old imagery
+
+[Service]
+Type=oneshot
+User=@USER@
+ExecStart=@REPO@/scripts/cleanup-imagery.sh
+Nice=19
+IOSchedulingClass=idle

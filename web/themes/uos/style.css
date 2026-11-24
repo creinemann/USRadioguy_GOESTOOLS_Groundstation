@@ -1,0 +1,214 @@
+html
+{
+	scrollbar-color: #47976e #183425;
+}
+body
+{
+	background: repeating-linear-gradient(to bottom, #031a0b, #09160d, #031a0b 10px);
+	background-attachment: fixed;
+	font-family: "Perfect DOS VGA 437 Win", monospace;
+	-webkit-tap-highlight-color: #47976e9e;
+	scrollbar-color: #47976e #183425;
+}
+.errorMessage
+{
+	color: #5cdc95;
+}
+.errorMessage .fa
+{
+	color: #47976e;
+}
+.topBar
+{
+	background: repeating-linear-gradient(to bottom, #031a0b, #09160d, #031a0b 10px);
+	box-shadow: none;
+	border-bottom: solid 1px #47976e;
+}
+.barTitle, .weatherHeader, .prettyBoxHeader, .menuItem, .weatherLeft
+{
+	font-weight: normal;
+}
+.topBarInner, .spanLink.selected, .prettyBox
+{
+	color: #5cdc95;
+}
+.sideBar
+{
+	background: repeating-linear-gradient(to bottom, #031a0b, #09160d, #031a0b 10px);
+	box-shadow: none;
+	border-right: solid 1px #47976e;
+}
+.menuItem, .menuItem:hover
+{
+	color: #5cdc95;
+}
+.menuItem.selected, .menuItem.selected:hover
+{
+	color: #09160d;
+}
+.menuItem.selected
+{
+	background: #47976e;
+}
+.menuItem:hover,
+.prettyBox input[type="text"]:enabled:hover,
+.prettyBox input[type="number"]:enabled:hover,
+.prettyBox input[type="button"]:enabled:hover,
+.prettyBox input[type="radio"]:enabled:not(:checked):hover,
+.prettyBox select:enabled:hover,
+.autoFilterItem:hover
+{
+	background: #183425;
+}
+.autoFilterPicklist
+{
+	border-top: solid 1px #47976e;
+}
+.autoFilterItem.selected
+{
+	background: #5cdc95;
+	color: #031a0b;
+}
+.menuItem.selected:hover
+{
+	background: #5cdc95;
+}
+.prettyBox
+{
+	box-shadow: none;
+	background: none;
+	border: solid 1px #47976e;
+	border-radius: 0px;
+}
+.prettyBox.emwinLoader
+{
+	background: #47976e10;
+}
+.prettyBox.emwinLoader.highlighted
+{
+	box-shadow: inherit;
+	box-shadow: 0px 0px 5px 2px #47976e80;
+}
+.prettyBoxContent
+{
+	border-top: solid 1px #47976e;
+}
+.adminMessageBody, .emwinMessageBody .prettyBoxList:first-child
+{
+	font-family: inherit;
+	font-size: 10pt;
+}
+.forecastCard
+{
+	border-left: solid 1px #47976e;
+}
+.forecastCard:last-child
+{
+	border-right: solid 1px #47976e;
+}
+.forecastHeader, .prettyBoxList
+{
+	border-bottom: solid 1px #47976e;
+}
+.spanLink
+{
+	color: #47976e;
+}
+.spanLink:after
+{
+	color: #47976e;
+}
+.goeslabel
+{
+	margin-bottom: 3px;
+	color: #47976e;
+	font-size: 9pt;
+}
+.prettyBox input, .prettyBox select
+{
+	background: transparent;
+	font-family: inherit;
+	border-radius: 0;
+}
+.prettyBox select
+{
+	appearance: none;
+}
+.prettyBox option
+{
+	background: #031a0b;
+}
+.prettyBox input[type="radio"]
+{
+	appearance: none;
+    border-radius: 50%;
+	border: 2px solid #47976e;
+	background-clip: content-box;
+	width: 14px;
+	height: 14px;
+	vertical-align: middle;
+	padding: 3px;
+	margin-top: 6px;
+	margin-bottom: 6px;
+}
+.prettyBox input[type="radio"]:checked
+{
+	background-color: #5cdc95;
+}
+.prettyBox input:enabled, .prettyBox select:enabled
+{
+	border: solid 1px #47976e;
+	color: #5cdc95;
+}
+.prettyBox input:disabled, .prettyBox select:disabled
+{
+	border: solid 1px #2d5e43;
+	color: #2d5e43;
+}
+.prettyBox input:focus, .prettyBox select:focus
+{
+	outline: none;
+}
+.autoFilterPicklistHolder
+{
+	border: solid 1px #47976e;
+}
+.autoFilterSearchHolder input:enabled
+{
+	border: none;
+}
+::-webkit-scrollbar-track
+{
+	background: #183425;
+}
+::-webkit-scrollbar-thumb
+{
+	background: #47976e;
+}
+::-webkit-scrollbar-button:vertical
+{
+	background-color: #09160d;
+}
+::-webkit-scrollbar-button:vertical:decrement
+{
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='5' fill='rgb(92, 220, 149)'><polygon points='5,0 0,5 10,5'/></svg>");
+}
+::-webkit-scrollbar-button:vertical:increment
+{
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='5' fill='rgb(92, 220, 149)'><polygon points='0,0 10,0 5,5'/></svg>");
+}
+::-webkit-scrollbar-button:vertical:hover
+{
+	background-color: #152d20;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button
+{ 
+	-webkit-appearance: none; 
+	margin: 0; 
+}
+input[type="number"]
+{ 
+	-moz-appearance: textfield;
+	appearance: textfield;
+}

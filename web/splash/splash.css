@@ -1,0 +1,20 @@
+/* USradioguy splash screen - plays once on every page load, any theme.
+   Original artwork, Nov 2026. Fades out by itself and never blocks clicks. */
+#siteSplash
+{
+	position: fixed;
+	inset: 0;
+	z-index: 10000;
+	background: #02060d url('splash.svg') center / min(96vw, calc(96vh * 16 / 9)) no-repeat;
+	pointer-events: none;
+	animation: siteSplash 3.6s ease-in forwards;
+}
+@keyframes siteSplash
+{
+	0%, 82% { opacity: 1; visibility: visible; }
+	100% { opacity: 0; visibility: hidden; transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce)
+{
+	#siteSplash { animation-duration: .01s; }
+}

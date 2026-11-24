@@ -1,0 +1,368 @@
+/*
+ * Ground Station HUD - theme for Vitality GOES (USradioguy)
+ * Vitality GOES is Copyright 2022-2023 Jamie Vital, GPL v3.
+ * This theme only overrides styles.css; it changes no program files.
+ * Card colors from your .ini files become each card's accent color
+ * (see the bottom of this file).
+ */
+:root
+{
+	--gs-cyan: #22d3ee;
+	--gs-cyan-dim: #0e7490;
+	--gs-ice: #e6fbff;
+	--gs-text: #bfefff;
+	--gs-ok: #34f5c5;
+	--gs-warn: #ffb020;
+	--gs-bad: #ff3b5c;
+	--gs-panel: rgba(4, 18, 32, 0.82);
+	--gs-deep: #02060d;
+}
+html { scrollbar-color: var(--gs-cyan-dim) #04101c; }
+body
+{
+	background-color: var(--gs-deep);
+	background-image:
+		radial-gradient(ellipse at 50% 0%, rgba(14, 116, 144, 0.28), transparent 60%),
+		radial-gradient(ellipse at 50% 120%, rgba(14, 116, 144, 0.18), transparent 55%),
+		linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
+		linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+	background-size: auto, auto, 32px 32px, 32px 32px;
+	background-attachment: fixed;
+	color: var(--gs-text);
+	font-family: 'Share Tech Mono', 'Consolas', monospace;
+	-webkit-tap-highlight-color: rgba(34, 211, 238, 0.25);
+}
+
+/* The splash screen now lives in /splash and plays for every theme. */
+/* faint moving scan lines over the whole site */
+body::after
+{
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: 9998;
+	pointer-events: none;
+	background: repeating-linear-gradient(transparent 0 3px, rgba(0, 0, 0, 0.12) 3px 4px);
+	animation: gsFlicker 6s infinite;
+}
+@keyframes gsFlicker { 0%, 96%, 100% { opacity: .5; } 97% { opacity: .8; } }
+@keyframes gsScan { from { left: -30%; } to { left: 130%; } }
+@keyframes gsIn { from { opacity: 0; transform: translateY(10px); } }
+@keyframes gsPulse { 50% { box-shadow: 0 0 18px rgba(34, 211, 238, 0.55), inset 0 0 12px rgba(34, 211, 238, 0.25); } }
+@media (prefers-reduced-motion: reduce)
+{
+	body::after, .topBar::after { animation: none; }
+}
+
+/* ---------------- Top bar ---------------- */
+.topBar
+{
+	background: linear-gradient(rgba(3, 14, 26, 0.96), rgba(3, 12, 22, 0.9));
+	box-shadow: 0 1px 0 var(--gs-cyan), 0 0 16px rgba(34, 211, 238, 0.35);
+	overflow: hidden;
+}
+.topBar::after
+{
+	content: "";
+	position: absolute;
+	bottom: 0;
+	width: 30%;
+	height: 2px;
+	background: linear-gradient(90deg, transparent, var(--gs-ice), transparent);
+	animation: gsScan 3.5s linear infinite;
+}
+.topBar::before
+{
+	content: "LINK // GOES-19 + GOES-18 HRIT 1694.1";
+	position: absolute;
+	right: 84px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-size: 9pt;
+	letter-spacing: 2px;
+	color: var(--gs-cyan-dim);
+	border: 1px solid rgba(34, 211, 238, 0.35);
+	padding: 5px 10px;
+	clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+}
+.topBarInner { color: var(--gs-cyan); }
+.barLogo { color: var(--gs-cyan); filter: drop-shadow(0 0 6px var(--gs-cyan)); }
+.barTitle
+{
+	/* USradioguy logo sits to the left of the page title */
+	padding-left: 200px;
+	background: url('images/usradioguy-logo.png') left center / auto 72px no-repeat;
+	min-height: 50px;
+	line-height: 50px;
+	box-sizing: border-box;
+	font-family: 'Orbitron', sans-serif;
+	font-weight: 700;
+	font-size: 18pt;
+	letter-spacing: 5px;
+	text-transform: uppercase;
+	color: var(--gs-ice);
+	text-shadow: 0 0 10px rgba(34, 211, 238, 0.9);
+	width: calc(100% - 420px);
+}
+.barRefresh
+{
+	position: absolute;
+	right: 24px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: var(--gs-cyan);
+	border: 1px solid var(--gs-cyan);
+	border-radius: 50%;
+	width: 38px;
+	height: 38px;
+	line-height: 38px;
+	text-align: center;
+	box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+}
+.barRefresh:hover { background: rgba(34, 211, 238, 0.15); }
+.barRefresh svg { filter: none; }
+
+/* ---------------- Side menu ---------------- */
+.sideBar
+{
+	background: rgba(2, 8, 16, 0.97);
+	box-shadow: 1px 0 0 var(--gs-cyan), 6px 0 24px rgba(34, 211, 238, 0.18);
+}
+.menuItem
+{
+	position: relative;
+	margin: 6px 12px;
+	padding: 12px 14px;
+	color: var(--gs-text);
+	font-family: 'Orbitron', sans-serif;
+	font-weight: 500;
+	font-size: 10pt;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	border: 1px solid rgba(34, 211, 238, 0.22);
+	background: linear-gradient(90deg, rgba(34, 211, 238, 0.08), transparent 70%);
+	clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+	transition: background .2s, color .2s, border-color .2s;
+}
+.menuItemIconHolder { color: var(--gs-cyan); }
+.menuItem:hover
+{
+	color: var(--gs-ice);
+	border-color: var(--gs-cyan);
+	background: linear-gradient(90deg, rgba(34, 211, 238, 0.22), rgba(34, 211, 238, 0.04));
+}
+.menuItem.selected, .menuItem.selected:hover
+{
+	color: var(--gs-deep);
+	background: linear-gradient(90deg, var(--gs-cyan), #67e8f9);
+	border-color: var(--gs-ice);
+	box-shadow: 0 0 14px rgba(34, 211, 238, 0.6);
+}
+.menuItem.selected .menuItemIconHolder { color: var(--gs-deep); }
+
+/* ---------------- Cards ---------------- */
+.prettyBox
+{
+	--acc: var(--gs-cyan);
+	position: relative;
+	background-color: var(--gs-panel);
+	color: var(--gs-text);
+	border: 1px solid rgba(34, 211, 238, 0.28);
+	border-radius: 0;
+	box-shadow: inset 0 0 22px rgba(34, 211, 238, 0.08), 0 0 12px rgba(0, 0, 0, 0.6);
+	clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+	animation: gsIn .5s ease-out both;
+}
+.prettyBox[style*="background-color"] { background-color: var(--gs-panel) !important; }
+/* corner brackets */
+.prettyBox::before, .prettyBox::after
+{
+	content: "";
+	position: absolute;
+	width: 22px;
+	height: 22px;
+	border: 2px solid var(--acc);
+	pointer-events: none;
+	filter: drop-shadow(0 0 4px var(--acc));
+}
+.prettyBox::before { top: 5px; left: 5px; border-right: none; border-bottom: none; }
+.prettyBox::after { bottom: 5px; right: 5px; border-left: none; border-top: none; }
+.prettyBoxHeader
+{
+	position: relative;
+	font-family: 'Orbitron', sans-serif;
+	font-weight: 500;
+	font-size: 10.5pt;
+	letter-spacing: 2.5px;
+	text-transform: uppercase;
+	color: var(--gs-ice);
+	padding: 13px 16px 11px 30px;
+	border-bottom: 1px solid rgba(34, 211, 238, 0.18);
+	overflow: hidden;
+}
+.prettyBoxHeader::after
+{
+	content: "";
+	position: absolute;
+	left: 30px;
+	bottom: -1px;
+	width: 90px;
+	height: 2px;
+	background: var(--acc);
+	box-shadow: 0 0 8px var(--acc);
+}
+.prettyBoxHeader:hover { color: #fff; text-shadow: 0 0 8px var(--acc); }
+.prettyBoxHeader .fa { color: var(--acc); margin-right: 12px; }
+.prettyBoxContent { border-top: none; }
+.prettyBoxList { border-bottom: 1px solid rgba(34, 211, 238, 0.15); }
+.prettyBox.emwinLoader { background-color: rgba(4, 18, 32, 0.6); }
+.prettyBox.emwinLoader.highlighted { box-shadow: 0 0 0 1px var(--gs-cyan), 0 0 16px rgba(34, 211, 238, 0.5); }
+.weatherHeader, .hurricaneForecastHeader
+{
+	font-family: 'Orbitron', sans-serif;
+	font-size: 11pt;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	color: var(--acc);
+}
+.weatherLeft { color: var(--gs-cyan-dim); text-transform: uppercase; letter-spacing: 1px; }
+.weatherRight { color: var(--gs-ice); }
+.adminMessageBody, .emwinMessageBody .prettyBoxList:first-child { color: #a8e8f5; }
+
+/* ---------------- Images ---------------- */
+.goesimg
+{
+	box-sizing: border-box;
+	border: 1px solid rgba(34, 211, 238, 0.45);
+	box-shadow: 0 0 14px rgba(34, 211, 238, 0.18);
+}
+.prettyBoxContent video
+{
+	border: 1px solid rgba(34, 211, 238, 0.45);
+	box-shadow: 0 0 14px rgba(34, 211, 238, 0.25);
+}
+.goeslabel, .lgLabel
+{
+	font-style: normal;
+	color: var(--gs-cyan);
+	letter-spacing: 1.5px;
+	text-transform: uppercase;
+	font-size: 9.5pt;
+}
+.spanLink
+{
+	display: inline-block;
+	margin: 4px 6px;
+	padding: 5px 14px;
+	font-family: 'Orbitron', sans-serif;
+	font-size: 8.5pt;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--gs-cyan);
+	border: 1px solid rgba(34, 211, 238, 0.5);
+	clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+	transition: background .2s;
+}
+.spanLink:hover { background: rgba(34, 211, 238, 0.15); }
+.spanLink.selected
+{
+	background: var(--gs-cyan);
+	color: var(--gs-deep);
+	font-weight: 700;
+	animation: gsPulse 2.4s infinite;
+}
+.spanLink:after { content: none; }
+
+/* ---------------- Forecast strip ---------------- */
+.forecastCard { border-left: 1px solid rgba(34, 211, 238, 0.35); }
+.forecastCard:last-child { border-right: 1px solid rgba(34, 211, 238, 0.35); }
+.forecastHeader { color: var(--gs-cyan); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(34, 211, 238, 0.5); }
+
+/* ---------------- Form controls ---------------- */
+.prettyBox input[type="text"], .prettyBox input[type="number"], .prettyBox select
+{
+	font-family: 'Share Tech Mono', monospace;
+	background: #02101c;
+	color: var(--gs-ice);
+	border: 1px solid rgba(34, 211, 238, 0.6);
+	border-radius: 0;
+	padding: 6px 10px;
+}
+.prettyBox option { background: #02101c; color: var(--gs-ice); }
+.prettyBox input[type="button"], .prettyBox input[type="submit"]
+{
+	font-family: 'Orbitron', sans-serif;
+	font-size: 8.5pt;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--gs-deep);
+	background: var(--gs-cyan);
+	border: none;
+	padding: 8px 16px;
+	clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+	cursor: pointer;
+}
+.prettyBox input[type="button"]:enabled:hover { background: #67e8f9; }
+.prettyBox input:focus, .prettyBox select:focus { outline: none; box-shadow: 0 0 10px rgba(34, 211, 238, 0.6); }
+.prettyBox input[type="radio"], .prettyBox input[type="checkbox"]
+{
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	border: 1px solid var(--gs-cyan);
+	background: transparent;
+	vertical-align: middle;
+	cursor: pointer;
+}
+.prettyBox input[type="radio"] { border-radius: 50%; }
+.prettyBox input[type="radio"]:checked, .prettyBox input[type="checkbox"]:checked
+{
+	background: var(--gs-cyan);
+	box-shadow: inset 0 0 0 3px var(--gs-deep), 0 0 8px var(--gs-cyan);
+}
+.autoFilterPicklistHolder { border: 1px solid rgba(34, 211, 238, 0.6); background: #02101c; }
+.autoFilterItem:hover { background: rgba(34, 211, 238, 0.15); }
+.autoFilterItem.selected { background: var(--gs-cyan); color: var(--gs-deep); }
+
+/* ---------------- Errors & alerts ---------------- */
+.errorMessage { color: var(--gs-cyan); font-family: 'Orbitron', sans-serif; letter-spacing: 3px; text-transform: uppercase; }
+.errorMessage .fa { color: var(--gs-bad); filter: drop-shadow(0 0 12px var(--gs-bad)); }
+.weatherAlert { border-radius: 0; }
+.weatherAlert.red, .weatherAlert.blue, .weatherAlert.amber, .weatherAlert.green,
+.weatherAlert.purple, .weatherAlert.teal, .weatherAlert.brown
+{
+	background-color: var(--gs-panel);
+	color: var(--gs-ice);
+	border: 1px solid var(--acc);
+	box-shadow: inset 0 0 26px color-mix(in srgb, var(--acc) 25%, transparent);
+}
+.weatherAlert.red { --acc: var(--gs-bad); }
+.weatherAlert.amber, .weatherAlert.brown { --acc: var(--gs-warn); }
+.weatherAlert.blue, .weatherAlert.teal { --acc: var(--gs-cyan); }
+.weatherAlert.green { --acc: var(--gs-ok); }
+.weatherAlert.purple { --acc: #c084fc; }
+
+/* ---------------- Your .ini card colors -> accent color ---------------- */
+.prettyBox[style*="rgb(1, 58, 32)"]    { --acc: var(--gs-ok); }   /* #013A20 GOES-18 */
+.prettyBox[style*="rgb(187, 118, 0)"]  { --acc: var(--gs-warn); } /* #bb7600 */
+.prettyBox[style*="rgb(217, 135, 6)"]  { --acc: var(--gs-warn); } /* #d98706 */
+.prettyBox[style*="rgb(245, 155, 0)"]  { --acc: #ffc94d; }        /* #f59b00 */
+.prettyBox[style*="rgb(176, 145, 9)"]  { --acc: #ffe14d; }        /* #b09109 */
+.prettyBox[style*="rgb(179, 39, 4)"]   { --acc: var(--gs-bad); }  /* #b32704 Himawari */
+.prettyBox[style*="rgb(137, 207, 240)"]{ --acc: #93c5fd; }        /* #89CFF0 */
+.prettyBox[style*="rgb(8, 143, 143)"]  { --acc: #2dd4bf; }        /* #088F8F */
+.prettyBox[style*="rgb(59, 107, 104)"] { --acc: #2dd4bf; }        /* #3b6b68 */
+.prettyBox[style*="rgb(71, 140, 92)"]  { --acc: #86efac; }        /* #478C5C */
+.prettyBox[style*="rgb(6, 191, 6)"]    { --acc: var(--gs-ok); }   /* #06BF06 */
+
+/* ---------------- Scrollbars ---------------- */
+::-webkit-scrollbar-track { background: #04101c; }
+::-webkit-scrollbar-thumb { background: var(--gs-cyan-dim); border: 1px solid var(--gs-cyan); }
+::-webkit-scrollbar-button:vertical { background-color: #04101c; }
+
+/* ---------------- Small screens ---------------- */
+@media (max-width: 900px)
+{
+	.topBar::before { display: none; }
+	.barTitle { width: calc(100% - 130px); font-size: 13pt; letter-spacing: 2px; padding-left: 96px; background-size: auto 32px; }
+}

@@ -1,0 +1,123 @@
+body
+{
+	background: repeating-linear-gradient(to bottom, #031a0b, #09160d, #031a0b 10px);
+	background-attachment: fixed;
+	font-family: "Perfect DOS VGA 437 Win", monospace;
+	-webkit-tap-highlight-color: #ffbf009e;
+}
+.topBar
+{
+	background: repeating-linear-gradient(to bottom, #031a0b, #09160d, #031a0b 10px);
+	box-shadow: none;
+	border-bottom: solid 1px #ffbf00;
+}
+.barTitle, .weatherHeader, .prettyBoxHeader, .menuItem, .weatherLeft
+{
+	font-weight: normal;
+}
+.topBarInner, .spanLink.selected, .prettyBox
+{
+	color: #ffbf00;
+}
+.sideBar
+{
+	background: repeating-linear-gradient(to bottom, #031a0b, #09160d, #031a0b 10px);
+	box-shadow: none;
+	border-right: solid 1px #ffbf00;
+}
+.menuItem, .menuItem:hover
+{
+	color: #ffbf00;
+}
+.menuItem.selected, .menuItem.selected:hover
+{
+	color: #09160d;
+}
+.menuItem.selected
+{
+	background: #ffbf00;
+}
+.menuItem:hover, .prettyBox input:enabled:hover, .prettyBox select:enabled:hover
+{
+	background: #183425;
+}
+.menuItem.selected:hover
+{
+	background: #ffbf00;
+}
+.prettyBox
+{
+	box-shadow: none;
+	background: none;
+	border: solid 1px #ffbf00;
+	border-radius: 0px;
+}
+.prettyBoxContent
+{
+	border-top: solid 1px #ffbf00;
+}
+.otherEmwinBody
+{
+	font-family: inherit;
+	font-size: 10pt;
+}
+.forecastCard
+{
+	border-left: solid 1px #ffbf00;
+}
+.forecastCard:last-child
+{
+	border-right: solid 1px #ffbf00;
+}
+.forecastHeader, .prettyBoxList
+{
+	border-bottom: solid 1px #ffbf00;
+}
+.spanLink
+{
+	color: #ffbf00;
+}
+.spanLink:after
+{
+	color: #ffbf00;
+}
+.goeslabel
+{
+	margin-bottom: 3px;
+	color: #ffbf00;
+	font-size: 9pt;
+}
+.prettyBox input, .prettyBox select
+{
+	background: #29283b;
+	font-family: inherit;
+	border-radius: 0;
+}
+.prettyBox select
+{
+	appearance: none;
+}
+.prettyBox input:enabled, .prettyBox select:enabled
+{
+	border: solid 1px #ffbf00;
+	color: #ffbf00;
+}
+.prettyBox input:disabled, .prettyBox select:disabled
+{
+	border: solid 1px #2d5e43;
+	color: #2d5e43;
+}
+.prettyBox input:focus, .prettyBox select:focus
+{
+	outline: none;
+}
+.otherEmwinBody::-webkit-scrollbar-track,
+.forcastCardHolder::-webkit-scrollbar-track
+{
+	background: #183425;
+}
+.otherEmwinBody::-webkit-scrollbar-thumb,
+.forcastCardHolder::-webkit-scrollbar-thumb
+{
+	background: #ffbf00;
+}

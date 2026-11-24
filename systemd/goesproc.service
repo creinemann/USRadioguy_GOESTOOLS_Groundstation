@@ -1,0 +1,15 @@
+[Unit]
+Description=goesproc - GOES image and product decoder
+After=goesrecv.service
+Wants=goesrecv.service
+
+[Service]
+User=@USER@
+WorkingDirectory=@DATA@
+ExecStart=/usr/local/bin/goesproc -c /etc/goestools/goesproc-goesr.conf -m packet --subscribe tcp://127.0.0.1:5004 --out @DATA@
+Restart=always
+RestartSec=10
+Nice=5
+
+[Install]
+WantedBy=multi-user.target

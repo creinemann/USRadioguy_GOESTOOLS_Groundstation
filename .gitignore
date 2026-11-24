@@ -1,0 +1,12 @@
+# Written by install.sh / make-site-config.py for each station - never commit
+web/config/*.ini
+!web/config/station.ini.example
+web/lab/lab-config.js
+scripts/video24config.ini
+scripts/*.state
+scripts/*.state.lock
+# Generated media
+web/videos/*.mp4
+web/videos/*.rendering.mp4
+# Python
+__pycache__/
