@@ -9,9 +9,24 @@ your network.
 This is the setup that runs the [USRadioguy](https://usradioguy.com)
 station in Horicon, Wisconsin, packaged so anyone can install it with
 **one script**.
-You must have a 64 bit PI operating system, for ease of install, I recommend 
-Raspberry Pi Imager (https://www.raspberrypi.com/software/) Select the 64 bit 
-OS LITE Version (under 'Raspberry PI OS (other)' 
+## 📖 How to install: start here
+**New to this? Follow the step-by-step guide on USRadioguy.com:
+[Installing USRadioguy goestools on a Raspberry Pi](https://usradioguy.com/installing-usradioguy-goestools-on-a-raspberry-pi/).**
+It walks you through everything, from flashing the SD card to seeing your
+first image.
+
+Quick version:
+1. Flash a **32 GB+** microSD card with
+   [Raspberry Pi Imager](https://www.raspberrypi.com/software/). Choose
+   **Raspberry Pi OS (other) → Raspberry Pi OS Lite (64-bit)**.
+2. In Imager's settings, set a hostname, username and password, and Wi-Fi
+   if needed, and **enable SSH**. The Pi runs headless: no monitor or
+   keyboard.
+3. Boot the Pi, log in with PuTTY/SSH, and run
+   `sudo apt update && sudo apt full-upgrade -y && sudo reboot`.
+4. Run the [Install](#install) commands below, answer the questions,
+   then `sudo reboot`.
+5. Open `http://<your-pi-ip>/` or `/lab/` in any browser on your network.
 
 > NOTE: AI (Claude) was used to help streamline and check code.
 
@@ -38,7 +53,7 @@ OS LITE Version (under 'Raspberry PI OS (other)'
 | | |
 |---|---|
 | Computer | **Raspberry Pi 4 or 5** (2 GB+), current Raspberry Pi OS (64-bit). A Pi 3 runs the website, but video loops are turned off by default. |
-| Storage | 32 GB+ SD card; a USB SSD is better (about 3 GB/day of imagery, 3 days kept by default) |
+| Storage | 32 GB+ microSD card (64 GB recommended); a USB SSD is better (about 3 GB/day of imagery, 3 days kept by default) |
 | Radio | RTL-SDR (v3/v4) or Airspy, plus a GOES LNA/filter (e.g. Nooelec SAWbird+ GOES) |
 | Antenna | A 1.7 GHz grid or dish antenna aimed at your satellite |
 
@@ -64,7 +79,7 @@ forecast. Then it:
 5. sets up services: goesrecv, goesproc, video loops every 30 minutes,
    and a nightly cleanup.
 
-When it finishes, open **`http://<your-pi-address>/`** (or `/lab/`) in
+When it finishes, run `sudo reboot` once. Then open **`http://<your-pi-address>/`** (or `/lab/`) in
 any browser on your network.
 
 > **Already running goestools from `/etc/rc.local` or in `screen`?**
@@ -74,7 +89,7 @@ any browser on your network.
 ### Unattended install
 Every question can be answered with an environment variable:
 ```bash
-NONINTERACTIVE=1 SAT=goes18 SDR=rtlsdr GAIN=30 STATION="My Station" \
+NONINTERACTIVE=1 SAT=goes18 SDR=rtlsdr GAIN=6 STATION="My Station" \
 LOCATION="Anytown, USA" LAT=39.0 LON=-77.0 NWS_STATE=MD NWS_ZONE=MDZ013 \
 NWS_ORIG=LWXMD RADAR=NTHES ./install.sh
 ```
