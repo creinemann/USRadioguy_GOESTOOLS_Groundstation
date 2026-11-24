@@ -221,7 +221,7 @@ function drawHero()
 		});
 		actions.appendChild(btn);
 	}
-	actions.appendChild(el('<a class="btn ghost" href="#/imagery/abi/' + enc(sub) + '">Browse every channel</a>'));
+	actions.appendChild(el('<a class="btn ghost" href="#/imagery/abi/' + enc(sub) + '">Browse Recent Imagery</a>'));
 
 	var tl = document.getElementById('heroTimeline');
 	tl.innerHTML = '';
