@@ -218,4 +218,16 @@ cat <<EOF
               /etc/goestools/goesrecv.conf    (gain, SDR)
    Update later:  cd $REPO && git pull && ./install.sh
 
+   Original software:
+     * Vitality GOES: (c) 2022-2025 Jamie Vital
+         https://github.com/JVital2013/vitality-goes
+     * goestools: (c) Pieter Noordhuis and contributors
+         https://github.com/pietern/goestools
+     * USRadioguy additions (Lab view, HUD, themes, LUTs, Himawari support,
+       Pi installer, Linux scripts): (c) 2023-2026 Carl Reinemann
+         https://usradioguy.com/
+
+   Please visit usradioguy.com and donate today to help keep the site
+   and software running!
+
 EOF
