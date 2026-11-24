@@ -114,9 +114,12 @@ else
 		git clone -q --recursive "$GOESTOOLS_URL" "$SRC_DIR/goestools"
 	fi
 	mkdir -p "$SRC_DIR/goestools/build"
-	(cd "$SRC_DIR/goestools/build" && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release >/dev/null \
-	   && make -j"$(nproc)" >"$SRC_DIR/goestools-build.log" 2>&1) \
-	   || die "goestools build failed - see $SRC_DIR/goestools-build.log"
+	echo "    Building quietly - progress and any warnings go to $SRC_DIR/goestools-build.log"
+	echo "    (watch it from a second PuTTY window with:  tail -f $SRC_DIR/goestools-build.log)"
+	(cd "$SRC_DIR/goestools/build" \
+	   && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_BUILD_TYPE=Release -Wno-dev -Wno-deprecated >"$SRC_DIR/goestools-build.log" 2>&1 \
+	   && make -j"$(nproc)" >>"$SRC_DIR/goestools-build.log" 2>&1) \
+	   || { tail -20 "$SRC_DIR/goestools-build.log"; die "goestools build failed - full log: $SRC_DIR/goestools-build.log"; }
 	(cd "$SRC_DIR/goestools/build" && sudo make install >/dev/null)
 	ok "$(/usr/local/bin/goesproc --version | head -1)"
 fi
