@@ -9,6 +9,9 @@ your network.
 This is the setup that runs the [USRadioguy](https://usradioguy.com)
 station in Horicon, Wisconsin, packaged so anyone can install it with
 **one script**.
+You must have a 64 bit PI operating system, for ease of install, I recommend 
+Raspberry Pi Imager (https://www.raspberrypi.com/software/) Select the 64 bit 
+OS LITE Version (under 'Raspberry PI OS (other)' 
 
 > NOTE: AI (Claude) was used to help streamline and check code.
 
