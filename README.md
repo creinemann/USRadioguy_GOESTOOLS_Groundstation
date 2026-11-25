@@ -182,6 +182,13 @@ windows/                    Windows scripts: video loops, cleanup, copy imagery 
 ```
 
 ### Running the website on Windows
+> **⚠️ Only recommended if your imagery resides on the PC.** The Windows
+> website reads every image from a folder on the PC. It can't show images
+> that live only on the Pi. If your imagery stays on the Pi, use the
+> website the Pi already runs (`http://<pi-address>/`). The installer
+> below can copy imagery from your Pis to the PC every 5 minutes. That
+> uses about 10 GB of PC disk per satellite for 3 days.
+
 Your receivers stay on Raspberry Pis, and the website runs on a Windows
 PC with [XAMPP](https://www.apachefriends.org). There's a one-script
 installer for this too:
