@@ -91,8 +91,10 @@ Choose a theme under **Settings → Web App Theme** in the classic view.
 |---|---|
 | ![Apollo Panel theme showing EMWIN graphics](docs/images/theme-apollo-emwin.jpg) | ![Starship Ops Console theme showing mesoscale imagery](docs/images/theme-starshipops-mesoscale.jpg) |
 | **Apollo Panel (1969):** gray panel plates, green readouts and lit annunciator buttons | **Starship Ops Console:** elbow frames and pill buttons, inspired by sci-fi starship consoles |
+| ![Ground Station HUD theme showing current weather and the 7-day forecast](docs/images/theme-groundstation-weather.jpg) | ![USRadioguy theme showing full disk imagery, the night LUT and Himawari-9 water vapor](docs/images/theme-usradioguy-fulldisk.jpg) |
+| **Ground Station HUD:** cyan holographic mission display, shown on the Current Weather page | **USRadioguy:** the station's house style, shown with full disk, the USRadioguy LUT and Himawari-9 water vapor |
 | ![Starship Ops Console theme showing current weather and the 7-day forecast](docs/images/theme-starshipops-weather.jpg) | |
-| **Current Weather:** local conditions, radar and forecast from the NWS data your dish receives | |
+| **Current Weather:** local conditions, radar and forecast from the NWS data your dish receives (Starship Ops) | |
 
 ## What you need
 | | |

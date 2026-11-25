@@ -129,6 +129,20 @@ function renderMenuItem(index, icon, name)
 	newMenuItem.innerHTML = "<div class='menuItemIconHolder'><i class='fa fa-" + icon + "' aria-hidden='true'></i></div><div style='vertical-align: middle; display: inline-block;'>" + name + "</div>";
 	document.getElementById('sideBar').appendChild(newMenuItem);
 }
+// USradioguy: menu entry that opens the Lab view (shown in every theme)
+var LAB_MENU_TITLE = 'Earth Lab';
+function renderLinkMenuItem(index, icon, name, href)
+{
+	newMenuItem = document.createElement('a');
+	newMenuItem.className = 'menuItem';
+	newMenuItem.id = 'menuItem' + index;
+	newMenuItem.href = href;
+	newMenuItem.style.display = 'block';
+	newMenuItem.style.color = 'inherit';
+	newMenuItem.style.textDecoration = 'none';
+	newMenuItem.innerHTML = "<div class='menuItemIconHolder'><i class='fa fa-" + icon + "' aria-hidden='true'></i></div><div style='vertical-align: middle; display: inline-block;'>" + name + "</div>";
+	document.getElementById('sideBar').appendChild(newMenuItem);
+}
 function removeCard(target)
 {
 	target.parentElement.parentElement.nextSibling.remove();
@@ -2283,6 +2297,7 @@ window.addEventListener("load", function()
 			renderMenuItem('Local-Settings', 'cogs', 'Local Settings');
 			if(config.showSysInfo) renderMenuItem('System-Info', 'info-circle', 'System Info');
 			renderMenuItem('Ground-Station', 'satellite-dish', 'Ground Station');
+			renderLinkMenuItem('Lab', 'globe-americas', LAB_MENU_TITLE, programPath + 'lab/');
 			
 			//Select the topmost menu if one is not selected
 			pathnameSplit = window.location.pathname.split('/');
