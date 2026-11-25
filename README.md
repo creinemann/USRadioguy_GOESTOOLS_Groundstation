@@ -48,10 +48,7 @@ the software. — Carl*
 
 ## What you get
 ![The Lab view: latest GOES-19 full disk, a 24-hour timeline and loop playback](docs/images/lab-view.jpg)
-*The Lab view (`/lab/`)*
-
-![The Ground Station HUD: signal lock, Viterbi and packet-rate history, and Raspberry Pi health](docs/images/ground-station-hud.jpg)
-*The Ground Station HUD*
+*The Lab view (`/lab/`). More in [Screenshots](#screenshots).*
 
 - **goestools, USRadioguy edition**
   ([creinemann/goestools](https://github.com/creinemann/goestools)),
@@ -70,6 +67,32 @@ the software. — Carl*
 - **Nightly cleanup**, so the SD card never fills up.
 - **Themes:** Ground Station, Apollo Panel, Starship Ops, NWS Amber and
   more.
+
+## Screenshots
+All taken at the USRadioguy station in Horicon, Wisconsin.
+
+### Lab view (`/lab/`)
+| | |
+|---|---|
+| ![Lab overview: the latest full disk image with a timeline and loop playback](docs/images/lab-view.jpg) | ![Lab imagery: every product with a 24-hour loop](docs/images/lab-imagery.jpg) |
+| **Overview:** the latest image from each satellite, a timeline and loop playback | **Imagery:** every product your station receives, each with a 24-hour loop |
+| ![Lab EMWIN: NWS radar and weather graphics received from the satellite](docs/images/lab-emwin.jpg) | ![Lab receivers: live signal quality and Pi health for each receiver](docs/images/lab-receivers.jpg) |
+| **EMWIN:** NWS radar mosaics, charts and bulletins straight from the satellite | **Receivers:** live signal quality and Pi health for each receiver |
+
+### Ground Station HUD
+![Ground Station HUD: signal lock, decoder gauges, Viterbi and packet-rate history, event log and Pi health](docs/images/ground-station-hud.jpg)
+*Live signal lock, decoder stats, Viterbi and packet-rate history, an
+event log, and the receiver Pi's CPU, temperature, memory and disk.*
+
+### Themes
+Choose a theme under **Settings → Web App Theme** in the classic view.
+
+| | |
+|---|---|
+| ![Apollo Panel theme showing EMWIN graphics](docs/images/theme-apollo-emwin.jpg) | ![Starship Ops Console theme showing mesoscale imagery](docs/images/theme-starshipops-mesoscale.jpg) |
+| **Apollo Panel (1969):** gray panel plates, green readouts and lit annunciator buttons | **Starship Ops Console:** elbow frames and pill buttons, inspired by sci-fi starship consoles |
+| ![Starship Ops Console theme showing current weather and the 7-day forecast](docs/images/theme-starshipops-weather.jpg) | |
+| **Current Weather:** local conditions, radar and forecast from the NWS data your dish receives | |
 
 ## What you need
 | | |
