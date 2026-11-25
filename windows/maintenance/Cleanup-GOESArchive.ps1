@@ -9,12 +9,19 @@
   Real run:
       .\Cleanup-GOESArchive.ps1
 
+  Or clean a whole imagery folder (what install-windows.ps1 sets up):
+      .\Cleanup-GOESArchive.ps1 -Root "D:\GOES Imagery" -KeepDays 3
+
   Task Scheduler action (one action replaces all three):
       Program:   powershell.exe
       Arguments: -NoProfile -ExecutionPolicy Bypass -File "<this folder>\Cleanup-GOESArchive.ps1"
 #>
 [CmdletBinding(SupportsShouldProcess)]
-param()
+param(
+    # Used by install-windows.ps1: clean one whole imagery folder instead of the list below
+    [string]$Root,
+    [double]$KeepDays = 3
+)
 
 # Folder = hours to keep. EMWIN must stay above 24 so the 24-hour videos
 # always have a full day of frames.
@@ -22,6 +29,12 @@ $keep = [ordered]@{
     'D:\goes-archive\goes19\text'  = 24
     'D:\goes-archive\goes19\emwin' = 48
     'D:\goes-archive\goes19\nws'   = 24
+}
+
+if ($Root) {
+    # Keep at least 2 days, so the 24-hour videos always have a full day of frames
+    if ($KeepDays -lt 2) { $KeepDays = 2 }
+    $keep = [ordered]@{ $Root = [int]($KeepDays * 24) }
 }
 
 $logPath = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) 'Cleanup-GOESArchive.log'

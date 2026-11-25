@@ -84,6 +84,7 @@ ask RADAR      "EMWIN radar region (NTHES, STHES, GRTLK, SOUPLN, NTHRKY, STHRKY,
 ask DATA       "Folder for received imagery" "$DATA_DEFAULT"
 ask KEEP_DAYS  "Days of imagery to keep" "3"
 ask LOOPS      "Make 24-hour video loops? yes/no" "$([ $PI3 = 1 ] && echo no || echo yes)"
+ask SHARE      "Share the imagery folder on your network, for a Windows PC website? yes/no" "no"
 
 # ------------------------------------------------------------------ packages
 say "Installing packages (this can take a while)"
@@ -199,6 +200,24 @@ if [ $HAVE_SYSTEMD = 1 ]; then
 else
 	warn "systemd not running here - services installed but not started"
 fi
+# ------------------------------------------------------------------ network share (optional)
+if [[ ${SHARE:-no} == y* ]]; then
+	say "Network share for a Windows PC"
+	sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q samba >/dev/null
+	if ! grep -q '^\[goes\]' /etc/samba/smb.conf; then
+		printf '\n# USRadioguy GOESTOOLS Ground Station - written by install.sh\n[goes]\n   path = %s\n   read only = yes\n   browseable = yes\n   valid users = %s\n' "$DATA" "$RUN_USER" \
+			| sudo tee -a /etc/samba/smb.conf >/dev/null
+	fi
+	if ! sudo pdbedit -L 2>/dev/null | grep -q "^$RUN_USER:"; then
+		if [ "$NONINTERACTIVE" = 1 ]; then warn "Set the share password later with:  sudo smbpasswd -a $RUN_USER"
+		else echo "    Choose a password for the share. Windows asks for it once (it can match your Pi password):"
+			sudo smbpasswd -a "$RUN_USER"; fi
+	fi
+	[ $HAVE_SYSTEMD = 1 ] && sudo systemctl restart smbd
+	SHARE_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
+	ok "imagery shared read-only as  \\\\${SHARE_IP}\\goes   (user: $RUN_USER)"
+fi
+
 # Older guides start goestools from /etc/rc.local inside screen; two copies would fight over the SDR
 if grep -qs "goesrecv" /etc/rc.local; then
 	warn "/etc/rc.local also starts goesrecv. Remove those lines, or goesrecv will fail with signal=ABRT (SDR busy)."

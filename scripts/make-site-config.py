@@ -52,6 +52,25 @@ SAT_INFO = {
 }
 
 
+VIDEO_PI = """; Raspberry Pi friendly: 1080 px wide, no frame blending (very slow on a Pi)
+maxWidth = 1080
+crf = 24
+preset = veryfast
+threads = 2
+minFrames = 6
+minSeconds = 8
+smooth = no
+allowSmooth = no
+"""
+VIDEO_WINDOWS = """maxWidth = 1500
+crf = 22
+minFrames = 6
+minSeconds = 8
+; smooth = yes blends frames for silkier loops, but takes far longer on most PCs
+smooth = no
+"""
+
+
 # ------------------------------------------------------------------ goesproc
 def goesproc_handlers(path):
     """Minimal TOML reader for goesproc handler tables (type/origin/regions/channels/directory)."""
@@ -176,11 +195,25 @@ def main():
     ap.add_argument("--radar", default="NTHES", help="EMWIN radar code (RADxxxxx)")
     ap.add_argument("--city", default="")
     ap.add_argument("--theme", default="groundstation")
+    ap.add_argument("--rx", action="append", default=[], metavar="SAT=HOST",
+                    help="address of the Pi running goesrecv for SAT, e.g. goes19=192.168.1.20 "
+                         "(default 127.0.0.1 = this computer)")
+    ap.add_argument("--disks", default="", help='disks for the Ground Station page, e.g. "/" or "C:, E:"')
+    ap.add_argument("--windows", action="store_true",
+                    help="settings for a Windows (XAMPP) website instead of a Raspberry Pi")
+    ap.add_argument("--ffmpeg", default="", help="full path to ffmpeg (Windows video loops)")
     a = ap.parse_args()
     if len(a.sat) != len(a.goesproc):
         sys.exit("--sat and --goesproc must be given the same number of times")
 
-    data = a.data.rstrip("/")
+    # PHP on Windows accepts forward slashes, and they never need escaping in .ini files
+    data = a.data.replace("\\", "/").rstrip("/")
+    rx_hosts = {}
+    for item in a.rx:
+        k, _, v = item.partition("=")
+        if k not in SAT_INFO or not v:
+            sys.exit("--rx must look like goes19=192.168.1.20")
+        rx_hosts[k] = v.strip()
     cfgdir = os.path.join(a.web, "config")
     os.makedirs(cfgdir, exist_ok=True)
 
@@ -198,7 +231,7 @@ def main():
     emwin_txt, emwin_items = filter_ini(os.path.join(TPL, "emwin.ini"), dirs, rename_sat=None if nws_sat == "goes19" else nws_sat)
     header = "; Written by scripts/make-site-config.py - re-run it after changing goesproc configs.\n"
     for fn, txt in (("abi.ini", abi_txt), ("meso.ini", meso_txt), ("nws.ini", nws_txt), ("emwin.ini", emwin_txt)):
-        with open(os.path.join(cfgdir, fn), "w") as f:
+        with open(os.path.join(cfgdir, fn), "w", encoding="utf-8") as f:
             f.write(header + txt)
     shutil.copy(os.path.join(TPL, "otheremwin.ini"), os.path.join(cfgdir, "otheremwin.ini"))
 
@@ -206,7 +239,7 @@ def main():
     cats = ["abi = abi.ini"] + (["meso = meso.ini"] if meso_items else []) + ["nws = nws.ini", "emwin = emwin.ini"]
     paths = "\n".join("{} = {}".format(t, data) for t in ("GOES19", "GOES18"))
     city = a.city or (a.location.split(",")[0].upper() if a.location else "")
-    with open(os.path.join(cfgdir, "config.ini"), "w") as f:
+    with open(os.path.join(cfgdir, "config.ini"), "w", encoding="utf-8") as f:
         f.write("""; Written by scripts/make-site-config.py
 [general]
 siteTitle = "{name}"
@@ -248,13 +281,28 @@ maxUserFiles = 1000
     # ---- station.ini (only if missing: it may hold the user's own settings/keys)
     st = os.path.join(cfgdir, "station.ini")
     if not os.path.exists(st):
-        ex = open(os.path.join(cfgdir, "station.ini.example")).read()
+        ex = open(os.path.join(cfgdir, "station.ini.example"), encoding="utf-8").read()
         ex = re.sub(r'(?m)^name\s*=.*$', 'name     = "{}"'.format(a.name.replace('"', "'")), ex, count=1)
         ex = re.sub(r'(?m)^location\s*=.*$', 'location = "{}"'.format(a.location.replace('"', "'")), ex, count=1)
-        if sats == ["goes18"]:
-            ex = ex.replace('[receiver.east]\nlabel  = "GOES-19 (EAST) HRIT 1694.1"\nsat    = "GOES-19"\nwhere  = "East"',
-                            '[receiver.west]\nlabel  = "GOES-18 (WEST) HRIT 1694.1"\nsat    = "GOES-18"\nwhere  = "West"')
-        with open(st, "w") as f:
+        if a.disks:
+            ex = re.sub(r'(?m)^disks\s*=.*$', 'disks = "{}"'.format(a.disks), ex, count=1)
+        # one [receiver.*] section per satellite, replacing the example's
+        rx = []
+        for sat in sats:
+            info = SAT_INFO[sat]
+            # On a Pi the receiver is this computer; a Windows website needs the Pi's address
+            host = rx_hosts.get(sat, "" if a.windows else "127.0.0.1")
+            local = "true" if host in ("127.0.0.1", "localhost") else "false"
+            rx.append('[receiver.{k}]\nlabel  = "{n} ({w}) HRIT 1694.1"\nsat    = "{n}"\nwhere  = "{W}"\n'
+                      'host   = "{h}"\nlocal  = {l}\ngrafana    = ""\ndatasource = 0\nkey        = ""\n'.format(
+                          k=info["key"], n=info["name"], w=info["key"].upper(), W=info["key"].title(), h=host, l=local))
+        i = ex.find("[receiver.east]")
+        if i >= 0:
+            tail = ex[i:]
+            j = tail.find(";[receiver.west]")
+            keep_example = j >= 0 and "goes18" not in sats   # the example is a west receiver
+            ex = ex[:i] + "\n".join(rx) + ("\n" + tail[j:] if keep_example else "")
+        with open(st, "w", encoding="utf-8") as f:
             f.write(ex)
 
     # ---- lab-config.js
@@ -276,7 +324,7 @@ maxUserFiles = 1000
                                region="East Asia, Australia and the western Pacific", rx="west",
                                inst="AHI instrument, relayed by GOES-18", products=him)
     import json
-    with open(os.path.join(a.web, "lab", "lab-config.js"), "w") as f:
+    with open(os.path.join(a.web, "lab", "lab-config.js"), "w", encoding="utf-8") as f:
         f.write("/*\n * lab-config.js - satellites and products on the Lab Overview page.\n"
                 " * Written by scripts/make-site-config.py. Each product is [ id, label ] where\n"
                 " * id is a section of config/abi.ini; rx is the receiver id in config/station.ini.\n */\n"
@@ -294,9 +342,9 @@ maxUserFiles = 1000
         seen.add(vname)
         flt = section_value(text, "filter")
         loops.append("[{}]\nsub = {}\n{}".format(vname, sub, "filter = {}\n".format(flt) if flt else ""))
-    with open(a.videos_config, "w") as f:
+    with open(a.videos_config, "w", encoding="utf-8") as f:
         f.write("""; 24-hour video loops - written by scripts/make-site-config.py
-; Used by create-24h-videos.py (run every 30 minutes by a systemd timer).
+; Used by create-24h-videos.py (Pi) or Create24HourVideos.ps1 (Windows).
 [settings]
 ffmpeg = ffmpeg
 videoDir = {web}/videos
@@ -304,17 +352,12 @@ liveRoots = {data}
 archiveRoots =
 hours = 24
 fps = 15
-; Raspberry Pi friendly: 1080 px wide, no frame blending (very slow on a Pi)
-maxWidth = 1080
-crf = 24
-preset = veryfast
-threads = 2
-minFrames = 6
-minSeconds = 8
-smooth = no
-allowSmooth = no
-
-""".format(web=os.path.abspath(a.web), data=data) + "\n".join(loops))
+{tuning}
+""".format(web=os.path.abspath(a.web).replace("\\", "/") if not a.windows else os.path.abspath(a.web),
+           data=data if not a.windows else a.data.rstrip("\\/"),
+           tuning=VIDEO_WINDOWS if a.windows else VIDEO_PI).replace(
+               "ffmpeg = ffmpeg", "ffmpeg = " + (a.ffmpeg or ("ffmpeg.exe" if a.windows else "ffmpeg")))
+               + "\n".join(loops))
 
     print("Site config written for: {}".format(", ".join(sats)))
     print("  Full disk entries: {}  Mesoscale: {}  EMWIN: {}  Video loops: {}".format(

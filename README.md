@@ -141,6 +141,9 @@ LOCATION="Anytown, USA" LAT=39.0 LON=-77.0 NWS_STATE=MD NWS_ZONE=MDZ013 \
 NWS_ORIG=LWXMD RADAR=NTHES ./install.sh
 ```
 Other options:
+- `SHARE=yes` shares the imagery folder on your network, for a Windows
+  website. Set the share password afterwards with
+  `sudo smbpasswd -a $USER`.
 - `SKIP_GOESTOOLS=1` keeps an existing goestools.
 - `OVERWRITE_CONF=yes` replaces existing `/etc/goestools` configs.
 
@@ -163,6 +166,7 @@ port-forward it to the internet. For remote access, install
 ## Repository layout
 ```
 install.sh                  Raspberry Pi installer
+install-windows.ps1         Windows (XAMPP) website installer
 goestools/                  goesrecv.conf and goesproc configs (GOES-19, GOES-18 + Himawari-9)
 web/                        the website (Vitality GOES + USRadioguy additions)
   config/station.ini.example  station name, receivers, optional Grafana keys
@@ -174,18 +178,46 @@ scripts/
   cleanup-imagery.sh        deletes old imagery
 systemd/                    service and timer units (filled in by install.sh)
 templates/vitality/         product catalog the site config is built from
-windows/                    Windows versions of the loop and cleanup scripts (XAMPP setups)
+windows/                    Windows scripts: video loops, cleanup, copy imagery from the Pis
 ```
 
-### Running on Windows (XAMPP)
-The website runs the same way under XAMPP:
-1. Copy `web/` to `htdocs`.
-2. Create `web/config/*.ini` for your folders. Run
-   `scripts/make-site-config.py`, or start from `templates/vitality/` and
-   set the `[paths]` in `config.ini`.
-3. Copy `config/station.ini.example` to `station.ini`.
-4. For loops, use `windows/24hour/Create24HourVideos.ps1` with
-   `video24config.example.ini`.
+### Running the website on Windows
+Your receivers stay on Raspberry Pis, and the website runs on a Windows
+PC with [XAMPP](https://www.apachefriends.org). There's a one-script
+installer for this too:
+
+1. On each receiver Pi, answer **yes** to *"Share the imagery folder on
+   your network"* when you run `./install.sh`. That shares the imagery
+   read-only as `\\<pi-address>\goes`.
+2. On the PC, install XAMPP. Then download this repository
+   (**Code → Download ZIP**) and extract it to a permanent folder, e.g.
+   `C:\USRadioguy-Groundstation`.
+3. Open **PowerShell as administrator** and run:
+   ```powershell
+   cd C:\USRadioguy-Groundstation
+   powershell -ExecutionPolicy Bypass -File .\install-windows.ps1
+   ```
+
+The installer:
+- checks for Python and ffmpeg, and offers to install them with winget;
+- copies the website into XAMPP (backing up anything it replaces);
+- asks the same questions as the Pi installer, plus your Pis' addresses;
+- builds the website settings;
+- turns on Apache as a Windows service;
+- allows the site through the firewall (home networks only);
+- creates scheduled tasks under **Task Scheduler → USRadioguy Ground
+  Station**:
+  - copy imagery from the Pis every 5 minutes;
+  - 24-hour video loops every 30 minutes;
+  - nightly cleanup.
+
+The share password is stored encrypted, and only administrators can read
+it. Live signal stats come straight from each Pi. Pi health (CPU,
+temperature) on a Windows site needs optional Grafana keys in
+`web\config\station.ini`.
+
+Already copying imagery your own way? Answer **no** to the copy
+question and point the installer at your imagery folder.
 
 ### Several receivers (like the USRadioguy station)
 Run one receiver Pi per satellite and the website on one of them, or on
