@@ -47,6 +47,12 @@ keeps the updates coming.
 the software. — Carl*
 
 ## What you get
+![The Lab view: latest GOES-19 full disk, a 24-hour timeline and loop playback](docs/images/lab-view.jpg)
+*The Lab view (`/lab/`)*
+
+![The Ground Station HUD: signal lock, Viterbi and packet-rate history, and Raspberry Pi health](docs/images/ground-station-hud.jpg)
+*The Ground Station HUD*
+
 - **goestools, USRadioguy edition**
   ([creinemann/goestools](https://github.com/creinemann/goestools)),
   built from source. It adds the following, using the USRadioguy custom
