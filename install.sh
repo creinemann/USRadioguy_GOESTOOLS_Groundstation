@@ -197,6 +197,67 @@ sudo a2ensite -q groundstation >/dev/null
 if [ $HAVE_SYSTEMD = 1 ]; then sudo systemctl reload-or-restart apache2; else sudo apache2ctl -k graceful 2>/dev/null || sudo apache2ctl start; fi
 ok "website served from $REPO/web"
 
+# ------------------------------------------------------------------ an older goestools setup?
+# Older guides start goesrecv/goesproc from /etc/rc.local (often inside screen),
+# a crontab @reboot line, or their own systemd units. Left running, the old goesrecv
+# keeps the SDR (the new one dies with signal=ABRT, and the website shows no SDR
+# stats) and the old goesproc saves a second copy of every image.
+OLD_RC=""; OLD_CRON=""; OLD_UNITS=""; OLD_PROCS=""; OLD_OUT=""
+grep -qsE '^[^#]*goes(recv|proc)' /etc/rc.local && OLD_RC=1
+for __u in root "$RUN_USER"; do
+	sudo crontab -l -u "$__u" 2>/dev/null | grep -qE '^[^#]*goes(recv|proc)' && OLD_CRON="$OLD_CRON $__u"
+done
+for __f in /etc/systemd/system/*.service /lib/systemd/system/*.service; do
+	[ -f "$__f" ] || continue
+	case "$(basename "$__f")" in goesrecv.service|goesproc.service) continue;; esac
+	grep -qE '^ExecStart=.*goes(recv|proc)' "$__f" && OLD_UNITS="$OLD_UNITS $(basename "$__f")"
+done
+if [ $HAVE_SYSTEMD = 1 ]; then
+	__ours="$(systemctl show -p MainPID --value goesrecv.service 2>/dev/null) $(systemctl show -p MainPID --value goesproc.service 2>/dev/null)"
+else __ours=""; fi
+for __pid in $(pgrep -x goesrecv; pgrep -x goesproc); do
+	case " $__ours " in *" $__pid "*) ;; *) OLD_PROCS="$OLD_PROCS $__pid";; esac
+done
+# where the old goesproc saved images (from rc.local, crontab or running processes)
+OLD_OUT="$( { grep -hoE -- "--out[= ]+[^ \"']+" /etc/rc.local 2>/dev/null
+              for __u in root "$RUN_USER"; do sudo crontab -l -u "$__u" 2>/dev/null; done | grep -oE -- "--out[= ]+[^ \"']+"
+              for __pid in $OLD_PROCS; do tr '\0' ' ' < /proc/$__pid/cmdline 2>/dev/null | grep -oE -- "--out[= ]+[^ \"']+"; done
+            } | sed -E 's/--out[= ]+//' | sort -u | grep -vx "$DATA" | tr '\n' ' ' || true)"
+
+if [ -n "$OLD_RC$OLD_CRON$OLD_UNITS$OLD_PROCS" ]; then
+	say "Older goestools setup found"
+	[ -n "$OLD_RC" ]    && echo "    /etc/rc.local starts goesrecv/goesproc"
+	[ -n "$OLD_CRON" ]  && echo "    crontab starts goesrecv/goesproc for:$OLD_CRON"
+	[ -n "$OLD_UNITS" ] && echo "    other systemd services:$OLD_UNITS"
+	[ -n "$OLD_PROCS" ] && echo "    old goesrecv/goesproc still running (process$OLD_PROCS)"
+	echo "    Left running, the old goesrecv keeps the SDR and every image is saved twice."
+	ask TAKEOVER "Turn the old setup off (backups are kept) and use the new services? yes/no" "yes"
+	if [[ $TAKEOVER == y* ]]; then
+		if [ -n "$OLD_RC" ]; then
+			sudo cp -p /etc/rc.local /etc/rc.local.before-groundstation
+			sudo sed -i -E 's/^([^#]*goes(recv|proc).*)$/# turned off by groundstation install.sh: \1/' /etc/rc.local
+			ok "/etc/rc.local: old lines commented out (backup: /etc/rc.local.before-groundstation)"
+		fi
+		for __u in $OLD_CRON; do
+			sudo crontab -l -u "$__u" 2>/dev/null | sudo tee "/var/backups/crontab.$__u.before-groundstation" >/dev/null
+			sudo crontab -l -u "$__u" | sed -E 's/^([^#]*goes(recv|proc).*)$/# turned off by groundstation install.sh: \1/' | sudo crontab -u "$__u" -
+			ok "crontab ($__u): old lines commented out (backup: /var/backups/crontab.$__u.before-groundstation)"
+		done
+		for __u in $OLD_UNITS; do
+			sudo systemctl disable --now "$__u" >/dev/null 2>&1 && ok "stopped and disabled $__u"
+		done
+		if [ -n "$OLD_PROCS" ]; then
+			sudo kill $OLD_PROCS 2>/dev/null || true; sleep 2; sudo kill -9 $OLD_PROCS 2>/dev/null || true
+			ok "stopped the old goesrecv/goesproc"
+		fi
+		for __d in $OLD_OUT; do
+			if [ -d "$__d" ]; then warn "Old images are still in $__d ($(du -sh "$__d" 2>/dev/null | cut -f1)). New images go to $DATA. Delete the old folder when you no longer need it:  rm -rf \"$__d\""; fi
+		done
+	else
+		warn "Old setup left as is: the new goesrecv will probably fail (SDR busy) until you turn it off."
+	fi
+fi
+
 # ------------------------------------------------------------------ services
 say "Services"
 for u in goesrecv.service goesproc.service groundstation-videos.service groundstation-videos.timer groundstation-cleanup.service groundstation-cleanup.timer; do
@@ -204,7 +265,9 @@ for u in goesrecv.service goesproc.service groundstation-videos.service groundst
 done
 if [ $HAVE_SYSTEMD = 1 ]; then
 	sudo systemctl daemon-reload
-	sudo systemctl enable --now goesrecv.service goesproc.service groundstation-cleanup.timer >/dev/null
+	sudo systemctl enable goesrecv.service goesproc.service groundstation-cleanup.timer >/dev/null
+	sudo systemctl restart goesrecv.service goesproc.service >/dev/null
+	sudo systemctl start groundstation-cleanup.timer >/dev/null
 	if [[ $LOOPS == y* ]]; then sudo systemctl enable --now groundstation-videos.timer >/dev/null; ok "video loops every 30 min"
 	else sudo systemctl disable --now groundstation-videos.timer >/dev/null 2>&1 || true; ok "video loops off (enable later: sudo systemctl enable --now groundstation-videos.timer)"; fi
 	ok "goesrecv, goesproc and nightly cleanup running"
@@ -229,10 +292,6 @@ if [[ ${SHARE:-no} == y* ]]; then
 	ok "imagery shared read-only as  \\\\${SHARE_IP}\\goes   (user: $RUN_USER)"
 fi
 
-# Older guides start goestools from /etc/rc.local inside screen; two copies would fight over the SDR
-if grep -qs "goesrecv" /etc/rc.local; then
-	warn "/etc/rc.local also starts goesrecv. Remove those lines, or goesrecv will fail with signal=ABRT (SDR busy)."
-fi
 
 IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 cat <<EOF

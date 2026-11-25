@@ -156,7 +156,7 @@ body
 }
 .sideBar::after
 {
-	content: "LCL 43.45N 088.62W";
+	content: "";
 	display: block;
 	margin: 0 10px 20px 10px;
 	height: 70px;
