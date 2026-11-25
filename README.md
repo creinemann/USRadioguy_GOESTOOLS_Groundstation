@@ -156,7 +156,34 @@ Other options:
 | Change products | edit `/etc/goestools/goesproc-goesr.conf`, then re-run `./install.sh` (it rebuilds the site config) |
 | Turn video loops on or off | `sudo systemctl enable --now groundstation-videos.timer` (or `disable --now`) |
 | Days of imagery kept | `KEEP_DAYS` in `/etc/default/groundstation` |
-| Update | `cd /opt/groundstation && git pull && ./install.sh` |
+| Update | `cd /opt/groundstation && git pull && ./install.sh` (see [Updating](#updating)) |
+
+### Updating
+Updates bring new features, fixes and the newest USRadioguy goestools.
+
+**On the Pi** (log in with PuTTY), paste:
+```sh
+cd /opt/groundstation && git pull && ./install.sh
+```
+- Press **Enter** at each question. The defaults are your answers from
+  last time.
+- It rebuilds goestools (15–30 minutes), updates the website, and
+  restarts everything. Imagery keeps coming in until the restart.
+- **Your settings are kept:** station name, `station.ini`, and your
+  goestools configs. When a config changes in an update, the new
+  version is saved beside yours as `.new`.
+- **Only the website changed?** Skip the rebuild:
+  `cd /opt/groundstation && git pull && SKIP_GOESTOOLS=1 ./install.sh`
+- **"Permission denied" from `git pull`?** Run
+  `sudo chown -R $USER: /opt/groundstation` once, then try again. Use
+  plain `git pull`, never `sudo git pull`.
+
+**On a Windows website PC:** download the new ZIP (**Code → Download
+ZIP**), extract it over `C:\USRadioguy-Groundstation`, and run
+`install-windows.ps1` again as administrator. It remembers your answers.
+
+**Running goestools without this package?** See
+[Updating in the goestools guide](https://github.com/creinemann/goestools/blob/main/USRADIOGUY.md#updating).
 
 ### Viewing from outside your home
 By default the site is visible **only on your own network**. Don't
