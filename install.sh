@@ -158,6 +158,21 @@ else
 	sed -i -e "0,/^gain = .*/s//gain = $GAIN/" -e "0,/^bias_tee = .*/s//bias_tee = $([[ $BIAS_TEE == y* ]] && echo true || echo false)/" "$TMPC"
 fi
 write_conf "$TMPC" /etc/goestools/goesrecv.conf; rm -f "$TMPC"
+# A goesrecv.conf kept from an older setup may lack the publishers this station needs:
+# 5004 feeds goesproc, 6001/6002 feed the website's SDR stats. Add any that are missing.
+__added=""
+for __pub in "decoder.packet_publisher|tcp://0.0.0.0:5004|send_buffer = 1048576" \
+             "demodulator.stats_publisher|tcp://0.0.0.0:6001|" \
+             "decoder.stats_publisher|tcp://0.0.0.0:6002|"; do
+	IFS='|' read -r __sec __bind __extra <<< "$__pub"
+	if ! grep -qE "^\[${__sec//./\\.}\]" /etc/goestools/goesrecv.conf; then
+		[ -z "$__added" ] && sudo cp -p /etc/goestools/goesrecv.conf /etc/goestools/goesrecv.conf.before-publishers
+		printf '\n# Added by groundstation install.sh (needed by goesproc / the website)\n[%s]\nbind = "%s"\n%s\n' "$__sec" "$__bind" "$__extra" \
+			| sudo tee -a /etc/goestools/goesrecv.conf >/dev/null
+		__added="$__added $__sec"
+	fi
+done
+if [ -n "$__added" ]; then ok "goesrecv.conf: added$__added (backup: goesrecv.conf.before-publishers)"; fi
 write_conf "$REPO/goestools/goesproc-$SAT.conf" /etc/goestools/goesproc-goesr.conf
 sudo chmod 644 /etc/goestools/*.conf   # fixes configs written by older installer versions
 
