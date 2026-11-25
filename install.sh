@@ -38,9 +38,10 @@ say()  { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 ok()   { printf '    \033[32m✔\033[0m %s\n' "$*"; }
 warn() { printf '    \033[33m!\033[0m %s\n' "$*"; }
 die()  { printf '\n\033[31mERROR: %s\033[0m\n' "$*"; exit 1; }
-ask()  { # ask VAR "question" "default"
-	local __v="$1" q="$2" def="${3:-}" a=""
+ask()  { # ask VAR "question" "default"   (your answer from the last run is the default)
+	local __v="$1" q="$2" def="${3:-}" a="" __p="PREV_$1"
 	if [ -n "${!__v:-}" ]; then return; fi
+	if [ -n "${!__p:-}" ]; then def="${!__p}"; fi
 	if [ "$NONINTERACTIVE" = 1 ]; then printf -v "$__v" '%s' "$def"; return; fi
 	read -r -p "    $q [${def}]: " a || true
 	printf -v "$__v" '%s' "${a:-$def}"
@@ -65,7 +66,14 @@ if grep -qs "Raspberry Pi 3" /proc/device-tree/model 2>/dev/null; then
 else PI3=0; fi
 
 # ------------------------------------------------------------------ questions
+ANSWERS=/etc/default/groundstation-answers
+if [ -f "$ANSWERS" ]; then
+	while IFS='=' read -r __k __val; do
+		[[ $__k =~ ^[A-Z_]+$ ]] && printf -v "PREV_$__k" '%s' "$__val"
+	done < "$ANSWERS"
+fi
 say "A few questions (press Enter to accept the [default])"
+[ -f "$ANSWERS" ] && echo "    (defaults are your answers from the last install)"
 ask SAT        "Satellite this Pi receives: goes19 (East) or goes18 (West, includes Himawari-9)" "goes19"
 case "$SAT" in goes19|goes18) ;; 19) SAT=goes19;; 18) SAT=goes18;; *) die "Satellite must be goes19 or goes18";; esac
 ask SDR        "SDR type: rtlsdr or airspy" "rtlsdr"
@@ -85,6 +93,9 @@ ask DATA       "Folder for received imagery" "$DATA_DEFAULT"
 ask KEEP_DAYS  "Days of imagery to keep" "3"
 ask LOOPS      "Make 24-hour video loops? yes/no" "$([ $PI3 = 1 ] && echo no || echo yes)"
 ask SHARE      "Share the imagery folder on your network, for a Windows PC website? yes/no" "no"
+for __k in SAT SDR GAIN BIAS_TEE STATION LOCATION LAT LON TZ_NAME NWS_STATE NWS_ZONE NWS_ORIG RADAR DATA KEEP_DAYS LOOPS SHARE; do
+	printf '%s=%s\n' "$__k" "${!__k}"
+done | sudo tee "$ANSWERS" >/dev/null
 
 # ------------------------------------------------------------------ packages
 say "Installing packages (this can take a while)"
