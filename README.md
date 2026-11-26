@@ -197,7 +197,7 @@ cd /opt/groundstation && SKIP_GOESTOOLS=1 ./install.sh
 If you did edit it, copy the `[handler.geocolor]` lines from the `.new`
 file into your own config instead.
 
-**On a Windows website PC:** download the new ZIP (**Code → Download
+**On a Windows website PC: -not a standard install!!** download the new ZIP (**Code → Download
 ZIP**), extract it over `C:\USRadioguy-Groundstation`, and run
 `install-windows.ps1` again as administrator. It remembers your answers.
 
