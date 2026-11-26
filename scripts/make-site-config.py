@@ -202,6 +202,9 @@ def main():
     ap.add_argument("--windows", action="store_true",
                     help="settings for a Windows (XAMPP) website instead of a Raspberry Pi")
     ap.add_argument("--ffmpeg", default="", help="full path to ffmpeg (Windows video loops)")
+    ap.add_argument("--solar", default="", metavar="DIR",
+                    help="folder of SDO/SUVI space weather images (e.g. from a GRB station); "
+                         "turns on the Space Weather pages")
     a = ap.parse_args()
     if len(a.sat) != len(a.goesproc):
         sys.exit("--sat and --goesproc must be given the same number of times")
@@ -235,9 +238,39 @@ def main():
             f.write(header + txt)
     shutil.copy(os.path.join(TPL, "otheremwin.ini"), os.path.join(cfgdir, "otheremwin.ini"))
 
+    # ---- solar.ini (Space Weather: SDO / SUVI images from a GRB station, if the user has them)
+    solar_items, solar_dir = [], ""
+    if a.solar:
+        solar_dir = a.solar.replace("\\", "/").rstrip("/")
+        names = []
+        for root, _, files in os.walk(a.solar):
+            names += files
+            if len(names) > 20000:
+                break
+        secs = re.split(r"(?m)^(?=\[)", open(os.path.join(TPL, "solar.ini"), encoding="utf-8").read())
+        keep, found = [], []
+        for sec in secs:
+            m = re.match(r"\[([^\]]+)\]", sec)
+            if not m or m.group(1) == "_category_":
+                keep.append(sec); continue
+            flt = section_value(sec, "filter")
+            if not names or not flt or any(flt in n for n in names):
+                keep.append(sec); found.append(m.group(1))
+                solar_items.append((m.group(1), sec, flt))
+        with open(os.path.join(cfgdir, "solar.ini"), "w", encoding="utf-8") as f:
+            f.write(header + "".join(keep))
+        print("  Space weather: {} product(s) from {}{}".format(
+            len(found), a.solar, "" if names else " (folder empty or not found yet - all listed)"))
+    elif os.path.exists(os.path.join(cfgdir, "solar.ini")):
+        os.remove(os.path.join(cfgdir, "solar.ini"))
+
     # ---- config.ini
     cats = ["abi = abi.ini"] + (["meso = meso.ini"] if meso_items else []) + ["nws = nws.ini", "emwin = emwin.ini"]
+    if solar_dir:
+        cats.append("solar = solar.ini")
     paths = "\n".join("{} = {}".format(t, data) for t in ("GOES19", "GOES18"))
+    if solar_dir:
+        paths += "\nSDO = " + solar_dir
     city = a.city or (a.location.split(",")[0].upper() if a.location else "")
     with open(os.path.join(cfgdir, "config.ini"), "w", encoding="utf-8") as f:
         f.write("""; Written by scripts/make-site-config.py
@@ -342,6 +375,11 @@ maxUserFiles = 1000
         seen.add(vname)
         flt = section_value(text, "filter")
         loops.append("[{}]\nsub = {}\n{}".format(vname, sub, "filter = {}\n".format(flt) if flt else ""))
+    for name, text, flt in solar_items:
+        vp = section_value(text, "videoPath")
+        if vp and vp.lower().endswith(".mp4") and vp[:-4] not in seen:
+            seen.add(vp[:-4])
+            loops.append("[{}]\npaths = {}\n{}".format(vp[:-4], solar_dir, "filter = {}\n".format(flt) if flt else ""))
     with open(a.videos_config, "w", encoding="utf-8") as f:
         f.write("""; 24-hour video loops - written by scripts/make-site-config.py
 ; Used by create-24h-videos.py (Pi) or Create24HourVideos.ps1 (Windows).

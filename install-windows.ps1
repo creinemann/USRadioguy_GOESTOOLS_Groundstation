@@ -212,6 +212,9 @@ $wxzone   = (Ask "NWS forecast zone (e.g. MDZ013, see weather.gov)" (Prev 'wxzon
 $orig     = (Ask "NWS office code + state (e.g. LWXMD)" (Prev 'orig' "LWX$state")).ToUpper()
 $radar    = (Ask "EMWIN radar region (NTHES, STHES, GRTLK, SOUPLN, NTHRKY, STHRKY, UPRMIS, LWRMIS, PACNWS, PACSWS)" (Prev 'radar' 'NTHES')).ToUpper()
 $keepDays = Ask "Days of imagery to keep" (Prev 'keepDays' '3')
+$solar    = (Ask "Folder of SDO/SUVI space weather images, e.g. from a GRB station (Enter = none)" (Prev 'solar' 'none')).TrimEnd('\')
+if ($solar -eq 'none') { $solar = '' }
+if ($solar -and -not (Test-Path -LiteralPath $solar)) { Warn "$solar doesn't exist yet - the Space Weather pages will fill in once images arrive there" }
 $loops    = AskYes "Make 24-hour video loops?" $loopsDefault
 if ($loops -and -not $ffmpeg) { Warn "no ffmpeg - video loops turned off"; $loops = $false }
 $sub      = Ask "Website sub-folder (blank = the top of XAMPP, http://this-pc/)" (Prev 'subfolder' '')
@@ -258,6 +261,7 @@ $opt = [ordered]@{ '--name' = $name; '--location' = $location; '--lat' = $lat; '
                    '--state' = $state; '--wxzone' = $wxzone; '--orig' = $orig; '--radar' = $radar }
 foreach ($k in $opt.Keys) { if ($opt[$k]) { $pyArgs += @($k, $opt[$k]) } }
 if ($ffmpeg) { $pyArgs += @('--ffmpeg', $ffmpeg) }
+if ($solar) { $pyArgs += @('--solar', $solar) }
 foreach ($s in $sats) {
     $pyArgs += @('--sat', $s, '--goesproc', (Join-Path $Repo "goestools\goesproc-$s.conf"))
     if ($rx[$s]) { $pyArgs += @('--rx', "$s=$($rx[$s])") }
@@ -370,7 +374,7 @@ Set-StationTask 'Imagery Cleanup' (Join-Path $Repo 'windows\maintenance\Cleanup-
 $answers = [ordered]@{
     xampp = $xampp; sats = ($sats -join ','); data = $data; copy = $(if ($doCopy) { 'yes' } else { 'no' })
     name = $name; location = $location; lat = $lat; lon = $lon; tz = $tz; state = $state; wxzone = $wxzone
-    orig = $orig; radar = $radar; keepDays = $keepDays; loops = $(if ($loops) { 'yes' } else { 'no' }); subfolder = $sub
+    orig = $orig; radar = $radar; keepDays = $keepDays; solar = $(if ($solar) { $solar } else { 'none' }); loops = $(if ($loops) { 'yes' } else { 'no' }); subfolder = $sub
     service = $(if ($svc) { 'yes' } else { 'no' })
 }
 foreach ($s in $sats) { $answers["rx_$s"] = $rx[$s] }

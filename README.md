@@ -204,6 +204,23 @@ ZIP**), extract it over `C:\USRadioguy-Groundstation`, and run
 **Running goestools without this package?** See
 [Updating in the goestools guide](https://github.com/creinemann/goestools/blob/main/USRADIOGUY.md#updating).
 
+### Space Weather pages (optional, for GRB stations)
+GOES HRIT doesn't carry Sun imagery, but a **GRB** station does. If
+you have a folder of SDO/SUVI images (yours, or one shared from a GRB
+receiver), give its path when the installer asks *"Folder of SDO/SUVI
+space weather images"*. That turns on the **Space Weather** page in the
+classic site, the **Space** page and Sun picture in the Earth Lab, and
+24-hour loops of SDO 193 and 171. Press Enter to skip it.
+
+The pages find images by these parts of the file names (the names used
+at the USRadioguy station): `SDO_193_`, `SDO_171_`, `SUVI195_`,
+`SUVI284_`, `SUVI303_`, `SUVI093_`, `AURORA_`, `WSA_ENLIL_`,
+`geospace_3_day_`. Only the products found in the folder are listed.
+Different names? Edit `web/config/solar.ini` after installing.
+
+Space weather **alerts** and EMWIN **space weather messages** come over
+HRIT, so they work on every station, with or without this folder.
+
 ### Viewing from outside your home
 By default the site is visible **only on your own network**. Don't
 port-forward it to the internet. For remote access, install

@@ -93,7 +93,9 @@ ask DATA       "Folder for received imagery" "$DATA_DEFAULT"
 ask KEEP_DAYS  "Days of imagery to keep" "3"
 ask LOOPS      "Make 24-hour video loops? yes/no" "$([ $PI3 = 1 ] && echo no || echo yes)"
 ask SHARE      "Share the imagery folder on your network, for a Windows PC website? yes/no" "no"
-for __k in SAT SDR GAIN BIAS_TEE STATION LOCATION LAT LON TZ_NAME NWS_STATE NWS_ZONE NWS_ORIG RADAR DATA KEEP_DAYS LOOPS SHARE; do
+ask SOLAR      "Folder of SDO/SUVI space weather images, e.g. from a GRB station (Enter = none)" "${PREV_SOLAR:-none}"
+[ "$SOLAR" = none ] && SOLAR=""
+for __k in SAT SDR GAIN BIAS_TEE STATION LOCATION LAT LON TZ_NAME NWS_STATE NWS_ZONE NWS_ORIG RADAR DATA KEEP_DAYS LOOPS SHARE SOLAR; do
 	printf '%s=%s\n' "$__k" "${!__k}"
 done | sudo tee "$ANSWERS" >/dev/null
 
@@ -198,7 +200,12 @@ python3 "$REPO/scripts/make-site-config.py" --data "$DATA" --sat "$SAT" \
 	--goesproc /etc/goestools/goesproc-goesr.conf --web "$REPO/web" \
 	--videos-config "$REPO/scripts/video24config.ini" \
 	--name "$STATION" --location "$LOCATION" --lat "$LAT" --lon "$LON" --timezone "$TZ_NAME" \
-	--state "$NWS_STATE" --wxzone "$NWS_ZONE" --orig "$NWS_ORIG" --radar "$RADAR"
+	--state "$NWS_STATE" --wxzone "$NWS_ZONE" --orig "$NWS_ORIG" --radar "$RADAR" \
+	${SOLAR:+--solar "$SOLAR"}
+if [ -n "$SOLAR" ]; then
+	if sudo -u www-data test -r "$SOLAR" -a -x "$SOLAR" 2>/dev/null; then ok "Space Weather pages turned on ($SOLAR)"
+	else warn "The web server can't read $SOLAR - make it readable (e.g. chmod o+rx) or the Space Weather pages stay empty"; fi
+fi
 mkdir -p "$REPO/web/videos"
 chmod 755 "$REPO" "$REPO/web" "$REPO/web/videos"
 ok "web/config/*.ini, lab/lab-config.js, scripts/video24config.ini"
