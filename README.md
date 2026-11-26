@@ -186,6 +186,17 @@ cd /opt/groundstation && git pull && ./install.sh
   `sudo chown -R $USER: /opt/groundstation` once, then try again. Use
   plain `git pull`, never `sudo git pull`.
 
+**Turning on USRG_GeoColor on an earlier install:** the update keeps
+your own `/etc/goestools/goesproc-goesr.conf` and saves the new one
+beside it as `goesproc-goesr.conf.new`. If you never edited yours, switch
+to the new one and refresh the website settings:
+```sh
+sudo cp /etc/goestools/goesproc-goesr.conf.new /etc/goestools/goesproc-goesr.conf
+cd /opt/groundstation && SKIP_GOESTOOLS=1 ./install.sh
+```
+If you did edit it, copy the `[handler.geocolor]` lines from the `.new`
+file into your own config instead.
+
 **On a Windows website PC:** download the new ZIP (**Code → Download
 ZIP**), extract it over `C:\USRadioguy-Groundstation`, and run
 `install-windows.ps1` again as administrator. It remembers your answers.
