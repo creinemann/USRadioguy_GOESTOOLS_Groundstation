@@ -9,5 +9,5 @@
  */
 window.LAB_SATS = {
 	east: { name: 'GOES-19', tab: 'GOES-19 east', lon: '75.2° west', region: 'the Americas and the Atlantic',
-		products: [['fdGeoColor19', 'GeoColor'], ['fdNIGHTLUT19', 'Night color'], ['fdch07e_19', 'Shortwave IR'], ['fdch13_19', 'Infrared'], ['fdch02_19', 'Visible'], ['fdch09e_19', 'Water vapor']] }
+		products: [['fdNIGHTLUT19', 'Color'], ['fdGeoColor19', 'GeoColor'], ['fdch07e_19', 'Shortwave IR'], ['fdch13_19', 'Infrared'], ['fdch02_19', 'Visible'], ['fdch09e_19', 'Water vapor']] }
 };

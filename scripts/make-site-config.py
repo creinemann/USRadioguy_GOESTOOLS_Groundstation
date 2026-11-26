@@ -312,7 +312,7 @@ maxUserFiles = 1000
     lab = {}
     for sat in sats:
         info, s = SAT_INFO[sat], SAT_INFO[sat]["suffix"]
-        prods = pick(abi_items, s, [("fdGeoColor" + s, "GeoColor"), ("fdNIGHTLUT" + s, "Night color"),
+        prods = pick(abi_items, s, [("fdNIGHTLUT" + s, "Color"), ("fdGeoColor" + s, "GeoColor"),
                                     ("fdch07e_" + s, "Shortwave IR"), ("fdch13_" + s, "Infrared"),
                                     ("fdch02_" + s, "Visible"), ("fdch09e_" + s, "Water vapor")])
         if prods:
