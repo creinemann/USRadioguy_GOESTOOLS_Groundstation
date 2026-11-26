@@ -173,6 +173,18 @@ for __pub in "decoder.packet_publisher|tcp://0.0.0.0:5004|send_buffer = 1048576"
 	fi
 done
 if [ -n "$__added" ]; then ok "goesrecv.conf: added$__added (backup: goesrecv.conf.before-publishers)"; fi
+# Satellite changed since the last install (e.g. a GOES-19 Pi turned into a GOES-18 Pi)?
+# Then the kept goesproc config and station.ini describe the wrong satellite: replace them.
+if [ -f /etc/goestools/goesproc-goesr.conf ] && ! grep -qE "^[[:space:]]*origin[[:space:]]*=[[:space:]]*\"$SAT\"" /etc/goestools/goesproc-goesr.conf; then
+	__stamp="$(date +%Y%m%d-%H%M%S)"
+	sudo cp -p /etc/goestools/goesproc-goesr.conf "/etc/goestools/goesproc-goesr.conf.before-$SAT-$__stamp"
+	sudo install -m 644 "$REPO/goestools/goesproc-$SAT.conf" /etc/goestools/goesproc-goesr.conf
+	ok "goesproc config switched to $SAT (old one: goesproc-goesr.conf.before-$SAT-$__stamp)"
+	if [ -f "$REPO/web/config/station.ini" ]; then
+		mv "$REPO/web/config/station.ini" "$REPO/web/config/station.ini.before-$SAT-$__stamp"
+		warn "station.ini rebuilt for $SAT (old one kept as station.ini.before-$SAT-$__stamp; copy any Grafana keys back by hand)"
+	fi
+fi
 write_conf "$REPO/goestools/goesproc-$SAT.conf" /etc/goestools/goesproc-goesr.conf
 sudo chmod 644 /etc/goestools/*.conf   # fixes configs written by older installer versions
 
