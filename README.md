@@ -52,10 +52,13 @@ the software. — Carl*
 
 - **goestools, USRadioguy edition**
   ([creinemann/goestools](https://github.com/creinemann/goestools)),
-  built from source. It adds the following, using the USRadioguy custom
-  and night color LUTs:
-  - Himawari-9 false color
-  - enhanced water vapor
+  built from source. It adds:
+  - **USRG_GeoColor**: natural Earth colors for GOES-19, GOES-18 and
+    Himawari-9 full disks. Land comes from NASA's Blue Marble for the
+    time of year, clouds and brightness are live, and colors change with
+    the seasons automatically.
+  - the USRadioguy night color LUT
+  - Himawari-9 color and enhanced water vapor
 - **Vitality GOES** website: full disk and mesoscale imagery, NWS and
   EMWIN products, local weather, space weather.
 - **Lab view** (`/lab/`): a modern front end with satellite tabs, a
@@ -78,6 +81,11 @@ All taken at the USRadioguy station in Horicon, Wisconsin.
 | **Overview:** the latest image from each satellite, a timeline and loop playback | **Imagery:** every product your station receives, each with a 24-hour loop |
 | ![Lab EMWIN: NWS radar and weather graphics received from the satellite](docs/images/lab-emwin.jpg) | ![Lab receivers: live signal quality and Pi health for each receiver](docs/images/lab-receivers.jpg) |
 | **EMWIN:** NWS radar mosaics, charts and bulletins straight from the satellite | **Receivers:** live signal quality and Pi health for each receiver |
+
+### USRG_GeoColor
+![USRadioguy LUT (top) and USRG_GeoColor (bottom) for GOES-19, GOES-18 and Himawari-9](docs/images/usrg-geocolor.jpg)
+*Top: the USRadioguy color LUT. Bottom: USRG_GeoColor, with natural
+land colors for late November. The clouds are the same live data.*
 
 ### Ground Station HUD
 ![Ground Station HUD: signal lock, decoder gauges, Viterbi and packet-rate history, event log and Pi health](docs/images/ground-station-hud.jpg)

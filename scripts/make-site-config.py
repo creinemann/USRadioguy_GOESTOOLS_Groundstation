@@ -312,13 +312,13 @@ maxUserFiles = 1000
     lab = {}
     for sat in sats:
         info, s = SAT_INFO[sat], SAT_INFO[sat]["suffix"]
-        prods = pick(abi_items, s, [("fdCUSTOMLUT" + s, "Color"), ("fdNIGHTLUT" + s, "Night color"),
+        prods = pick(abi_items, s, [("fdGeoColor" + s, "GeoColor"), ("fdNIGHTLUT" + s, "Night color"),
                                     ("fdch07e_" + s, "Shortwave IR"), ("fdch13_" + s, "Infrared"),
                                     ("fdch02_" + s, "Visible"), ("fdch09e_" + s, "Water vapor")])
         if prods:
             lab[info["key"]] = dict(name=info["name"], tab=info["tab"], lon=info["lon"], region=info["region"],
                                     rx=info["key"], products=prods)
-    him = pick(abi_items, "18", [("fdhimfc_18", "Color"), ("fdhimir_18", "Infrared"), ("fdhimvs_18", "Visible"), ("fdhimwve_18", "Water vapor")])
+    him = pick(abi_items, "18", [("fdhimgeo_18", "GeoColor"), ("fdhimir_18", "Infrared"), ("fdhimvs_18", "Visible"), ("fdhimwve_18", "Water vapor")])
     if him:
         lab["himawari"] = dict(name="Himawari-9", tab="Himawari-9", lon="140.7° east",
                                region="East Asia, Australia and the western Pacific", rx="west",
