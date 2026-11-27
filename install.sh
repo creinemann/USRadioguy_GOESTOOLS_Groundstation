@@ -188,6 +188,14 @@ if [ -f /etc/goestools/goesproc-goesr.conf ] && ! grep -qE "^[[:space:]]*origin[
 	fi
 fi
 write_conf "$REPO/goestools/goesproc-$SAT.conf" /etc/goestools/goesproc-goesr.conf
+# Himawari-9 channels now go in their own folders, like GOES: himawari9/fd/<vs|ir|wv>/<date>/
+# (older configs put all three in himawari9/fd/<date>/). Move a kept config over.
+__himold='directory = "./himawari9/{region:short|lower}/{time:%Y-%m-%d}"'
+if sudo grep -qF "$__himold" /etc/goestools/goesproc-goesr.conf; then
+	sudo cp -p /etc/goestools/goesproc-goesr.conf /etc/goestools/goesproc-goesr.conf.before-himawari-folders
+	sudo sed -i 's#"./himawari9/{region:short|lower}/{time:%Y-%m-%d}"#"./himawari9/{region:short|lower}/{channel:short|lower}/{time:%Y-%m-%d}"#' /etc/goestools/goesproc-goesr.conf
+	ok "Himawari-9 channels now saved in fd/vs, fd/ir, fd/wv (backup: goesproc-goesr.conf.before-himawari-folders)"
+fi
 sudo chmod 644 /etc/goestools/*.conf   # fixes configs written by older installer versions
 
 sudo mkdir -p "$DATA" && sudo chown "$RUN_USER": "$DATA" && sudo chmod 755 "$DATA"
