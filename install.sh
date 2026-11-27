@@ -196,6 +196,18 @@ if sudo grep -qF "$__himold" /etc/goestools/goesproc-goesr.conf; then
 	sudo sed -i 's#"./himawari9/{region:short|lower}/{time:%Y-%m-%d}"#"./himawari9/{region:short|lower}/{channel:short|lower}/{time:%Y-%m-%d}"#' /etc/goestools/goesproc-goesr.conf
 	ok "Himawari-9 channels now saved in fd/vs, fd/ir, fd/wv (backup: goesproc-goesr.conf.before-himawari-folders)"
 fi
+# USRG_GeoFusion (Nov 2026): add it next to USRG_GeoColor in a kept config
+if sudo grep -q "USRG_GeoColor" /etc/goestools/goesproc-goesr.conf && ! sudo grep -q "USRG_GeoFusion" /etc/goestools/goesproc-goesr.conf; then
+	sudo cp -p /etc/goestools/goesproc-goesr.conf /etc/goestools/goesproc-goesr.conf.before-geofusion
+	__tmp="$(mktemp)"
+	if sudo python3 "$REPO/scripts/add-geofusion.py" /etc/goestools/goesproc-goesr.conf "$__tmp" >/dev/null; then
+		sudo install -m 644 "$__tmp" /etc/goestools/goesproc-goesr.conf
+		ok "USRG_GeoFusion added to goesproc config (backup: goesproc-goesr.conf.before-geofusion)"
+	else
+		warn "could not add USRG_GeoFusion to your goesproc config; it is unchanged"
+	fi
+	rm -f "$__tmp"
+fi
 sudo chmod 644 /etc/goestools/*.conf   # fixes configs written by older installer versions
 
 sudo mkdir -p "$DATA" && sudo chown "$RUN_USER": "$DATA" && sudo chmod 755 "$DATA"
