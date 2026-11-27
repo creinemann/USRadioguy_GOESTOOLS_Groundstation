@@ -198,7 +198,7 @@ function drawHero()
 	document.getElementById('heroTitle').textContent = 'Earth from ' + sat.lon;
 	document.getElementById('heroLede').textContent = sat.name + ' watches ' + sat.region + ' from 35,786 km up. ' + (sat.via || CREDIT);
 	var chips = document.getElementById('heroChips');
-	chips.innerHTML = sat.products.map(function (p, i) { return '<button type="button" aria-pressed="' + (i == state.product) + '" data-i="' + i + '">' + esc(p[1]) + (/GeoColor|himgeo/.test(p[0]) ? '<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:8px;background:#2e7d32;color:#fff;font-size:10px;font-weight:700;letter-spacing:.5px;vertical-align:middle">NEW</span>' : '') + '</button>'; }).join('');
+	chips.innerHTML = sat.products.map(function (p, i) { return '<button type="button" aria-pressed="' + (i == state.product) + '" data-i="' + i + '">' + esc(p[1]) + (/GeoFusion|himfus|himire/.test(p[0]) ? '<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:8px;background:#2e7d32;color:#fff;font-size:10px;font-weight:700;letter-spacing:.5px;vertical-align:middle">NEW</span>' : '') + '</button>'; }).join('');
 	chips.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { state.product = +b.dataset.i; drawHero(); }); });
 
 	var disk = document.getElementById('heroDisk');

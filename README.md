@@ -57,8 +57,10 @@ the software. — Carl*
     Himawari-9 full disks. Land comes from NASA's Blue Marble for the
     time of year, clouds and brightness are live, and colors change with
     the seasons automatically.
+  - **USRG_GeoFusion**: GeoColor with the enhanced Channel 13 cold
+    cloud tops laid on top at 75%, for GOES-19, GOES-18 and Himawari-9
   - the USRadioguy night color LUT
-  - Himawari-9 color and enhanced water vapor
+  - Himawari-9 color, enhanced infrared and enhanced water vapor
 - **Vitality GOES** website: full disk and mesoscale imagery, NWS and
   EMWIN products, local weather, space weather.
 - **Lab view** (`/lab/`): a modern front end with satellite tabs, a
@@ -86,6 +88,10 @@ All taken at the USRadioguy station in Horicon, Wisconsin.
 ![USRadioguy LUT (top) and USRG_GeoColor (bottom) for GOES-19, GOES-18 and Himawari-9](docs/images/usrg-geocolor.jpg)
 *Top: the USRadioguy color LUT. Bottom: USRG_GeoColor, with natural
 land colors for late November. The clouds are the same live data.*
+
+### USRG_GeoFusion
+![USRG_GeoFusion: GeoColor with the colored cold cloud tops, GOES-19, GOES-18 and Himawari-9](docs/images/usrg-geofusion.jpg)
+*GeoColor with the enhanced Channel 13 colors on top: grey parts of the enhancement are left out, so only the cold cloud tops are colored.*
 
 ### Ground Station HUD
 ![Ground Station HUD: signal lock, decoder gauges, Viterbi and packet-rate history, event log and Pi health](docs/images/ground-station-hud.jpg)
