@@ -392,3 +392,7 @@ body { overflow-x: clip; }
 {
 	*, *::before, *::after { animation-duration: .01ms !important; animation-delay: 0s !important; transition-duration: .01ms !important; }
 }
+/* EMWIN and NWS charts: show the whole chart, on white like the paper originals (Nov 2026) */
+.tiles.charts { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+.tiles.charts .thumb { aspect-ratio: 4 / 3; background: #fff; }
+.tiles.charts .thumb img, .tiles.charts .thumb video { object-fit: contain; }

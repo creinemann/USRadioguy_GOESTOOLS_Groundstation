@@ -332,7 +332,7 @@ function renderImagery(cat, sub)
 	var it = cats[cat].data[sub];
 
 	main.innerHTML =
-	'<header class="page-head viewer-head"><p style="margin:0 0 10px"><a href="#/imagery/' + enc(cat) + '">All ' + esc(cats[cat].title.toLowerCase()) + '</a></p>' +
+	'<header class="page-head viewer-head"><p style="margin:0 0 10px"><a href="' + (cat == 'emwin' ? '#/emwin' : cat == 'nws' ? '#/emwin/nws' : '#/imagery/' + enc(cat)) + '">All ' + esc(cats[cat].title.toLowerCase()) + '</a></p>' +
 		'<div class="viewer-meta"><div><h1 class="h2">' + esc(it.title) + '</h1><p class="caption" style="margin:0">' + esc(cats[cat].title) + '</p></div><div class="viewer-actions" id="vActions"></div></div></header>' +
 	'<div class="viewer-frame" id="vFrame"><span class="loading">Loading…</span></div>' +
 	'<div class="timeline" id="vTimeline"></div>';
@@ -424,17 +424,22 @@ function plainParas(html)
 // ------------------------------------------------------------------ EMWIN
 function renderEmwin(view)
 {
-	var bulletins = view == 'bulletins', hasGfx = !!config.categories.emwin;
+	var cats = config.categories, bulletins = view == 'bulletins', nws = view == 'nws' && !!cats.nws, gfx = !bulletins && !nws;
+	function segBtn(v, label, on, n) { return '<button type="button" data-v="' + v + '" aria-pressed="' + on + '">' + label + (n ? ' <span class="muted">' + n + '</span>' : '') + '</button>'; }
 	main.innerHTML =
-	'<header class="page-head"><h1 class="display">EMWIN</h1><p class="lede">The Emergency Managers Weather Information Network: weather graphics and National Weather Service bulletins that GOES-19 rebroadcasts alongside its imagery.</p>' +
+	'<header class="page-head"><h1 class="display">EMWIN</h1><p class="lede">The Emergency Managers Weather Information Network: weather graphics, National Weather Service charts and bulletins that GOES-19 rebroadcasts alongside its imagery.</p>' +
 		'<div class="seg" style="margin-top:22px" role="group" aria-label="View">' +
-			'<button type="button" data-v="" aria-pressed="' + !bulletins + '">Graphics</button><button type="button" data-v="bulletins" aria-pressed="' + bulletins + '">Bulletins</button></div></header>' +
+			segBtn('', 'EMWIN graphics', gfx, cats.emwin && Object.keys(cats.emwin.data).length) +
+			(cats.nws ? segBtn('nws', 'NWS charts', nws, Object.keys(cats.nws.data).length) : '') +
+			segBtn('bulletins', 'Bulletins', bulletins) + '</div></header>' +
 	'<div id="emwinBody"></div>';
 	main.querySelectorAll('[data-v]').forEach(function (b) { b.addEventListener('click', function () { location.hash = '#/emwin' + (b.dataset.v ? '/' + b.dataset.v : ''); }); });
 	var body = document.getElementById('emwinBody');
-	if (!bulletins)
+	if (gfx || nws)
 	{
-		body.innerHTML = hasGfx ? tileGrid('emwin') : '<p class="empty">No EMWIN graphics are configured.</p>';
+		var cat = nws ? 'nws' : 'emwin';
+		body.innerHTML = cats[cat] ? groupedCharts(cat) : '<p class="empty">No EMWIN graphics are configured.</p>';
+		chartTimes(cat, body);
 		return;
 	}
 	var list = (config.otherEmwin && config.otherEmwin.system) || [];
@@ -479,6 +484,43 @@ function renderEmwin(view)
 		});
 	}).catch(function () { body.innerHTML = '<p class="empty">The bulletins could not be read. Check that the EMWIN folder is reachable, then reload.</p>'; });
 }
+// EMWIN and NWS graphics, grouped like the classic site's pages: whole charts (not cropped),
+// the time of each latest image, and radar loops playing in place when the product is set to autoplay
+var CHART_GROUPS = {
+	emwin: [['Radar', /radar/i], ['Satellite', /meteosat|himawari|goes|sat\b|satellite|hurricane basin|cloud tops/i], ['Forecasts and outlooks', /./]],
+	nws: [['Atlantic and Caribbean', /^(atl|car|gulf|watl|hiwind_atl)/i], ['Pacific', /^(pac|epac|hiwind_pac)/i], ['United States', /./]]
+};
+function groupedCharts(cat)
+{
+	var data = config.categories[cat].data, groups = CHART_GROUPS[cat], seen = {};
+	return groups.map(function (g) {
+		var keys = Object.keys(data).filter(function (s) { if (seen[s] || !g[1].test(cat == 'nws' ? s : data[s].title)) return false; seen[s] = 1; return true; });
+		if (!keys.length) return '';
+		return '<h2 class="h3" style="margin:34px 0 14px">' + esc(g[0]) + ' <span class="muted">' + keys.length + '</span></h2>' +
+			'<div class="tiles charts">' + keys.map(function (s) {
+				var d = data[s], live = d.videoPath && (d.autoplay === true || d.autoplay == '1' || d.autoplay == 'true');
+				return '<a class="tile" href="#/imagery/' + enc(cat) + '/' + enc(s) + '"><div class="thumb">' +
+					(live ? '<video muted loop autoplay playsinline preload="metadata" src="' + esc(API.video(d.videoPath)) + '" aria-label="' + esc(d.title) + ' loop"></video>'
+						: '<img loading="lazy" decoding="async" alt="" src="' + API.img(cat, s, 480) + '" onerror="labNoThumb(this)"' + (d.videoPath ? ' data-video="' + esc(API.video(d.videoPath)) + '"' : '') + '>') +
+					'</div><span class="tile-title">' + esc(d.title) + '</span><span class="tile-note" data-when="' + esc(s) + '">' + (live ? 'Loop, last 24 hours' : '&nbsp;') + '</span></a>';
+			}).join('') + '</div>';
+	}).join('');
+}
+// fill in "3 h ago" under each still chart (a few lookups at a time)
+function chartTimes(cat, root)
+{
+	var notes = Array.prototype.slice.call(root.querySelectorAll('[data-when]')).filter(function (n) { return n.textContent.trim() === ''; });
+	(function next() {
+		var batch = notes.splice(0, 4); if (!batch.length) return;
+		Promise.all(batch.map(function (n) {
+			return getJSON(API.meta(cat, n.dataset.when)).then(function (m) {
+				var f = (m.images || [])[m.images.length - 1];
+				n.textContent = f ? ago(f.timestamp) : 'No image yet';
+			}).catch(function () { n.textContent = ''; });
+		})).then(next);
+	})();
+}
+
 // bulletin text arrives as HTML paragraphs with <br> line breaks; keep the text and the line breaks only
 function bulletinParas(html)
 {
