@@ -54,9 +54,9 @@ the software. — Carl*
   ([creinemann/goestools](https://github.com/creinemann/goestools)),
   built from source. It adds:
   - **USRG_GeoColor**: natural Earth colors for GOES-19, GOES-18 and
-    Himawari-9 full disks. Land comes from NASA's Blue Marble for the
-    time of year, clouds and brightness are live, and colors change with
-    the seasons automatically.
+    Himawari-9 full disks. A filter using assigned color gradients comes from NASA's Blue Marble for the
+    time of year (monthly), HRIT clouds and brightness are live, and colors change with
+    the seasons automatically. GOESTools combines Bands 02,07,13's specific grayscale channels to paint the image.
   - **USRG_GeoFusion**: GeoColor with the enhanced Channel 13 cold
     cloud tops laid on top at 75%, for GOES-19, GOES-18 and Himawari-9
   - the USRadioguy night color LUT
