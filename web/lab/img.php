@@ -30,13 +30,18 @@ if (!is_dir($item['path'])) { http_response_code(404); exit; }
 
 // ---- find the file (same rules as dataHandler.php) ----
 $fmt = getFormatByMode($item['mode'], $item['filter']);
+$dateOnly = !preg_match('/[GHgh]/', $fmt['dateFormat']);   // no hour in the file name's date
 $best = null; $bestTs = 0;
 foreach (preg_grep($fmt['regex'], scandir_recursive($item['path'], $item['fast'])) as $file) {
 	if (!preg_match($fmt['regex'], $file, $m)) continue;
 	$dt = DateTime::createFromFormat($fmt['dateFormat'], $m['date'], new DateTimeZone('UTC'));
 	if ($dt === false) continue;
 	$ts = $dt->getTimestamp();
-	if ($t) { if ($ts === $t) { $best = $file; $bestTs = $ts; break; } }
+	if ($t) {
+		// Daily products (VIIRS, SST, Global Geo) have only a date in the file name; PHP fills
+		// the missing time with "now", so match those on the UTC date instead of the exact second.
+		if ($ts === $t || ($dateOnly && gmdate('Ymd', $ts) === gmdate('Ymd', $t))) { $best = $file; $bestTs = $ts; break; }
+	}
 	elseif ($ts > $bestTs) { $best = $file; $bestTs = $ts; }
 }
 if ($best === null || !is_file($best)) { http_response_code(404); exit; }
