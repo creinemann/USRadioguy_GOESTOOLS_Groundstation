@@ -345,7 +345,11 @@ function renderImagery(cat, sub)
 		var b = el('<button type="button" class="btn"><svg viewBox="0 0 10 10"><path d="M2 1l7 4-7 4z"/></svg><span>Play the loop</span></button>');
 		b.addEventListener('click', function ()
 		{
-			if (!playing) { stage.play(API.video(it.videoPath), function () { b.querySelector('span').textContent = 'Loop not ready yet'; }); b.querySelector('span').textContent = 'Show still image'; }
+			if (!playing) { stage.play(API.video(it.videoPath), function () {
+				b.querySelector('span').textContent = 'Loop not ready yet';
+				if (cat == 'solar' && window.LAB_SPACENET === true && !document.getElementById('loopWhy'))
+					b.insertAdjacentHTML('afterend', '<p class="caption" id="loopWhy">A loop is made once there are at least 6 images. With internet space weather, each press of Download on the Space page adds one (10 minutes apart); loops are rebuilt every 30 minutes.</p>');
+			}); b.querySelector('span').textContent = 'Show still image'; }
 			else { stage.show(API.img(cat, sub, 1600, currentTs), it.title); b.querySelector('span').textContent = 'Play the loop'; }
 			playing = !playing;
 		});
