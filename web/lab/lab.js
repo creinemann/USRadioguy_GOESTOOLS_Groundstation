@@ -443,26 +443,38 @@ function renderEmwin(view)
 		return;
 	}
 	var list = (config.otherEmwin && config.otherEmwin.system) || [];
-	if (!list.length) { body.innerHTML = '<p class="empty">No EMWIN bulletins are configured.</p>'; return; }
+	var mine = myBulletins(), hidden = hiddenBulletins();
 	body.innerHTML = '<p class="caption">Reading the latest bulletins…</p>';
 	getJSON('../dataHandler.php?type=metadata&id=otherEmwin').then(function (m)
 	{
-		var msgs = m.system || [];
+		var sys = m.system || [], usr = m.user || [];
+		// one list: the viewer's own choices first, then the station's (minus any the viewer switched off)
+		var cards = mine.map(function (b, i) { return { title: b.title, msgs: usr[i] || [], own: true }; })
+			.concat(list.map(function (b, i) { return { title: b.title, msgs: sys[i] || [], key: b.title }; })
+			.filter(function (c) { return !hidden[c.key]; }));
 		body.innerHTML =
-			'<div class="accordion">' + list.map(function (b, i) {
-				var n = (msgs[i] || []).length;
+			'<div class="reader-nav" style="margin-bottom:18px"><span class="muted">' + (mine.length ? mine.length + ' of your own bulletins plus the station\'s list' : 'Showing the station\'s bulletins. Add your local NWS office\'s warnings and forecasts.') + '</span>' +
+				'<button type="button" class="btn" id="bulPick">Choose your bulletins</button></div>' +
+			'<div id="bulPanel" hidden></div>' +
+			(cards.length ? '<div class="accordion">' + cards.map(function (c, i) {
+				var n = c.msgs.length;
 				return '<section class="acc' + (n ? '' : ' none') + '">' +
 					'<h2><button type="button" class="acc-btn" aria-expanded="false" aria-controls="acc' + i + '" data-i="' + i + '"' + (n ? '' : ' disabled') + '>' +
-						'<span class="acc-title">' + esc(titleCaseKeep(b.title)) + '</span>' +
+						'<span class="acc-title">' + esc(titleCaseKeep(c.title)) + (c.own ? ' <span class="muted">yours</span>' : '') + '</span>' +
 						'<span class="acc-count">' + (n ? n + (n == 1 ? ' message' : ' messages') : 'No messages') + '</span>' +
 						'<svg class="acc-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5l3 3 3-3"/></svg></button></h2>' +
 					'<div class="acc-panel" id="acc' + i + '" hidden></div></section>';
-			}).join('') + '</div>' +
+			}).join('') + '</div>' : '<p class="empty">No bulletins chosen yet.</p>') +
 			(m.satelliteTleDate ? '<p class="caption" style="margin-top:28px">Orbit data for ' + (m.satelliteTle || []).length + ' satellites last received ' + esc(m.satelliteTleDate) + '.</p>' : '');
 
+		document.getElementById('bulPick').addEventListener('click', function () {
+			var p = document.getElementById('bulPanel');
+			if (p.hidden) bulletinPicker(p, m.allUnique || [], list, mine, hidden);
+			p.hidden = !p.hidden;
+		});
 		function showMsg(panel, i, at)
 		{
-			var all = msgs[i] || [];
+			var all = cards[i].msgs;
 			var paras = bulletinParas(all[at]);
 			panel.innerHTML =
 				(all.length > 1 ? '<div class="reader-nav"><button type="button" class="btn ghost" data-step="-1"' + (at == 0 ? ' disabled' : '') + '>Previous</button>' +
@@ -483,6 +495,105 @@ function renderEmwin(view)
 			});
 		});
 	}).catch(function () { body.innerHTML = '<p class="empty">The bulletins could not be read. Check that the EMWIN folder is reachable, then reload.</p>'; });
+}
+
+// ---- Each viewer's own EMWIN bulletins (Nov 2026) ----
+// Saved in this browser only, in the same "otheremwin" cookie the classic site's
+// "Load Additional Data" uses, so choices show up on both sites.
+var PIL_NAMES = {
+	AFD: 'Area forecast discussion', ZFP: 'Zone forecast', HWO: 'Hazardous weather outlook', SPS: 'Special weather statement',
+	FFA: 'Flood watch', FFW: 'Flash flood warning', FFS: 'Flash flood statement', FLW: 'Flood warning', FLS: 'Flood statement and advisory',
+	SVR: 'Severe thunderstorm warning', SVS: 'Severe weather statement', TOR: 'Tornado warning', WSW: 'Winter weather warnings, watches and advisories',
+	NPW: 'Wind, heat, fog and frost advisories', WCN: 'Watch county notice', RWR: 'Regional weather roundup', NOW: 'Short-term forecast',
+	PNS: 'Public information statement', LSR: 'Local storm reports', CLI: 'Daily climate report', CLM: 'Monthly climate report',
+	RVS: 'River statement', RVA: 'River summary', RVD: 'Daily river forecast', HYD: 'Hydrology summary', ESF: 'Hydrologic outlook',
+	MWW: 'Marine weather message', SMW: 'Special marine warning', MWS: 'Marine weather statement', CWF: 'Coastal waters forecast',
+	NSH: 'Nearshore marine forecast', GLF: 'Great Lakes forecast', OFF: 'Offshore forecast', FWF: 'Fire weather forecast', RFW: 'Red flag warning',
+	AQA: 'Air quality alert', CEM: 'Civil emergency message', EQR: 'Earthquake report', RER: 'Record event report', SFT: 'Tabular state forecast',
+	SFP: 'State forecast', PFM: 'Point forecast matrix', AFM: 'Area forecast matrix', TCV: 'Tropical cyclone watches and warnings',
+	TCP: 'Tropical cyclone public advisory', TCD: 'Tropical cyclone discussion', TWO: 'Tropical weather outlook', SWO: 'Storm Prediction Center outlook',
+	SEL: 'Severe weather watch', PTS: 'Probabilistic outlook points', ADM: 'Administrative message', FTM: 'Radar outage notice', ALT: 'Space weather alert',
+	WAT: 'Space weather watch', WAR: 'Space weather warning', SUM: 'Space weather summary', VAA: 'Volcanic ash advisory', FVX: 'Volcano message'
+};
+var PIL_SUGGESTED = { FLW: 1, FFW: 1, FFA: 1, FLS: 1, SVR: 1, TOR: 1, SVS: 1, WSW: 1, SPS: 1, HWO: 1, NPW: 1, MWW: 1, AFD: 1 };
+function pilName(p) { return PIL_NAMES[p] || p; }
+function myBulletins()
+{
+	var c = (document.cookie.match(/(?:^|;\s*)otheremwin=([^;]*)/) || [])[1];
+	if (!c) return [];
+	try { c = decodeURIComponent(c); } catch (e) { return []; }
+	return c.split('~').map(function (card) {
+		var p = card.split('!'); if (p.length != 4) return null;
+		var id; try { id = atob(p[0].replace(/-/g, '=')); } catch (e) { return null; }
+		return { identifier: id, title: p[1], format: +p[2] ? 'paragraph' : 'formatted', truncate: p[3] };
+	}).filter(Boolean);
+}
+function saveMyBulletins(cards)
+{
+	var v = cards.map(function (b) {
+		return [btoa(b.identifier).replace(/=/g, '-'), String(b.title).replace(/[!~]/g, ''), b.format == 'formatted' ? 0 : 1, b.truncate || 0].join('!');
+	}).join('~');
+	var host = location.hostname, dom = /^[\d.]+$/.test(host) || host.indexOf('.') < 0 ? '' : ';domain=.' + host;
+	document.cookie = 'otheremwin=' + encodeURIComponent(v) + ';expires=' + new Date(Date.now() + 365 * 864e5).toUTCString() + ';path=/' + dom;
+	if (!v) document.cookie = 'otheremwin=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/' + dom;
+}
+function hiddenBulletins() { try { return JSON.parse(localStorage.getItem('labHiddenBulletins') || '{}'); } catch (e) { return {}; } }
+function bulletinPicker(panel, all, stationList, mine, hidden)
+{
+	var have = {}; mine.forEach(function (b) { have[b.identifier] = 1; });
+	var office = ''; try { office = localStorage.getItem('labNwsOffice') || ''; } catch (e) {}
+	if (!office) { var m = mine.map(function (b) { return (b.identifier.match(/\)?([A-Z]{3})\[A-Z0-9\]\{2\}$/) || [])[1]; }).filter(Boolean); office = m[0] || ''; }
+	var offices = {}; all.forEach(function (id) { offices[id.substr(3, 3)] = 1; });
+	function idFor(pil, off) { return pil + off + '[A-Z0-9]{2}'; }
+	function box(id, title, checked, note) {
+		return '<label style="display:flex;gap:8px;align-items:baseline;margin:4px 0"><input type="checkbox" data-id="' + esc(id) + '" data-title="' + esc(title) + '"' + (checked ? ' checked' : '') + '><span>' + esc(title) + (note ? ' <span class="muted">' + esc(note) + '</span>' : '') + '</span></label>';
+	}
+	function officeList(off) {
+		var pils = {}; all.forEach(function (id) { if (id.substr(3, 3) == off) pils[id.substr(0, 3)] = 1; });
+		var keys = Object.keys(pils).sort(function (a, b) { return (PIL_SUGGESTED[b] ? 1 : 0) - (PIL_SUGGESTED[a] ? 1 : 0) || pilName(a).localeCompare(pilName(b)); });
+		if (!off) return '<p class="muted">Type your office\'s 3-letter code above, for example MKX for Milwaukee/Sullivan. You can look yours up at weather.gov.</p>';
+		if (!keys.length) return '<p class="muted">Nothing from ' + esc(off) + ' has been received yet. Check the code, or try again after the station has run for a while.</p>';
+		var fresh = !mine.some(function (b) { return b.identifier.indexOf(off + '[') > 0; });
+		return keys.map(function (p) { var id = idFor(p, off); return box(id, pilName(p) + ' (' + off + ')', have[id] || (fresh && PIL_SUGGESTED[p]), p); }).join('');
+	}
+	var lakes = all.filter(function (id) { return /^(GLF|NSH|CWF|OFF)/.test(id); });
+	panel.innerHTML =
+		'<div class="bul-panel">' +
+		'<h2 class="h3" style="margin-top:0">Choose your bulletins</h2>' +
+		'<p class="muted" style="margin-top:0">Saved in this browser only, so everyone viewing the station picks their own. The classic site uses the same choices.</p>' +
+		'<h3>Your NWS office</h3>' +
+		'<input id="bulOffice" list="bulOffices" maxlength="3" value="' + esc(office) + '" placeholder="MKX" style="text-transform:uppercase;width:7em" aria-label="NWS office code">' +
+		'<datalist id="bulOffices">' + Object.keys(offices).sort().map(function (o) { return '<option value="' + esc(o) + '">'; }).join('') + '</datalist>' +
+		'<div id="bulOfficeList" style="margin-top:10px">' + officeList(office) + '</div>' +
+		(lakes.length ? '<h3>Great Lakes and marine forecasts</h3>' + lakes.map(function (id) { return box(id, pilName(id.substr(0, 3)) + ' (' + id.substr(3) + ')', have[id], id); }).join('') : '') +
+		'<h3>Any other bulletin received</h3>' +
+		'<input id="bulFind" placeholder="Search, e.g. RWR or SWODY1" style="width:16em" aria-label="Search all received bulletins"><div id="bulFound"></div>' +
+		(stationList.length ? '<h3>The station\'s bulletins</h3>' + stationList.map(function (b) {
+			return '<label style="display:flex;gap:8px;margin:4px 0"><input type="checkbox" data-station="' + esc(b.title) + '"' + (hidden[b.title] ? '' : ' checked') + '><span>' + esc(titleCaseKeep(b.title)) + '</span></label>';
+		}).join('') : '') +
+		'<div class="reader-nav" style="margin-top:18px"><button type="button" class="btn ghost" id="bulClear">Remove all of mine</button><button type="button" class="btn" id="bulSave">Save</button></div></div>';
+	var offIn = panel.querySelector('#bulOffice');
+	offIn.addEventListener('input', function () { var v = offIn.value.toUpperCase().replace(/[^A-Z]/g, ''); if (v.length == 3 || !v) panel.querySelector('#bulOfficeList').innerHTML = officeList(v); });
+	panel.querySelector('#bulFind').addEventListener('input', function () {
+		var q = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+		panel.querySelector('#bulFound').innerHTML = q.length < 2 ? '' : all.filter(function (id) { return id.indexOf(q) >= 0; }).slice(0, 30)
+			.map(function (id) { return box(id, pilName(id.substr(0, 3)) + ' (' + id.substr(3) + ')', have[id], id); }).join('') || '<p class="muted">Nothing received matches.</p>';
+	});
+	panel.querySelector('#bulClear').addEventListener('click', function () { saveMyBulletins([]); location.reload(); });
+	panel.querySelector('#bulSave').addEventListener('click', function () {
+		var keep = mine.slice(), seen = {};
+		// boxes on screen decide their own bulletin; everything else already saved stays
+		panel.querySelectorAll('input[data-id]').forEach(function (cb) {
+			var id = cb.dataset.id, at = keep.findIndex(function (b) { return b.identifier == id; });
+			if (seen[id]) return; seen[id] = 1;
+			if (cb.checked && at < 0) keep.push({ identifier: id, title: cb.dataset.title, format: 'paragraph', truncate: 0 });
+			if (!cb.checked && at >= 0) keep.splice(at, 1);
+		});
+		saveMyBulletins(keep);
+		var hide = {}; panel.querySelectorAll('input[data-station]').forEach(function (cb) { if (!cb.checked) hide[cb.dataset.station] = 1; });
+		try { localStorage.setItem('labHiddenBulletins', JSON.stringify(hide)); localStorage.setItem('labNwsOffice', offIn.value.toUpperCase()); } catch (e) {}
+		location.reload();
+	});
 }
 // EMWIN and NWS graphics, grouped like the classic site's pages: whole charts (not cropped),
 // the time of each latest image, and radar loops playing in place when the product is set to autoplay

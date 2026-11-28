@@ -396,3 +396,9 @@ body { overflow-x: clip; }
 .tiles.charts { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
 .tiles.charts .thumb { aspect-ratio: 4 / 3; background: #fff; }
 .tiles.charts .thumb img, .tiles.charts .thumb video { object-fit: contain; }
+
+/* Choose your bulletins (Nov 2026) */
+.bul-panel { border: 1px solid var(--line-strong); border-radius: 12px; padding: 22px; margin-bottom: 26px; }
+.bul-panel h3 { font-size: 15px; margin: 22px 0 6px; }
+.bul-panel input:not([type]), .bul-panel input[list] { background: transparent; color: inherit; border: 1px solid var(--line-strong); border-radius: 6px; padding: 6px 8px; font: inherit; }
+.bul-panel input[type=checkbox] { accent-color: var(--rayleigh); }
