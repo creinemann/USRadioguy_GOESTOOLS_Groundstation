@@ -64,7 +64,15 @@ the software. — Carl*
 - **Vitality GOES** website: full disk and mesoscale imagery, NWS and
   EMWIN products, local weather, space weather.
 - **Lab view** (`/lab/`): a modern front end with satellite tabs, a
-  timeline, loop playback and receiver status.
+  timeline, loop playback, receiver status and its own **Local
+  settings** page (the same location profiles as the classic site).
+- **Your own EMWIN bulletins:** each viewer picks the bulletins they
+  want: their NWS office's warnings and forecasts, Great Lakes and
+  marine forecasts, and tsunami and tropical-cyclone messages by region
+  from the NWS EMWIN catalog.
+- **Space weather from the internet** (optional): the Sun from NASA SDO
+  and GOES-18 SUVI, aurora and solar wind forecasts from NOAA SWPC, and
+  NASA's 24-hour SDO movies, downloaded only when you press a button.
 - **Ground Station HUD:** live goesrecv signal quality (Viterbi errors,
   packets per second, gain, frequency) plus the Pi's CPU, temperature,
   memory and disk.
@@ -83,6 +91,12 @@ All taken at the USRadioguy station in Horicon, Wisconsin.
 | **Overview:** the latest image from each satellite, a timeline and loop playback | **Imagery:** every product your station receives, each with a 24-hour loop |
 | ![Lab EMWIN: NWS radar and weather graphics received from the satellite](docs/images/lab-emwin.jpg) | ![Lab receivers: live signal quality and Pi health for each receiver](docs/images/lab-receivers.jpg) |
 | **EMWIN:** NWS radar mosaics, charts and bulletins straight from the satellite | **Receivers:** live signal quality and Pi health for each receiver |
+
+### Space weather (`/lab/` → Space weather)
+![Lab space weather: SDO, SUVI composites, aurora forecast and solar wind, with the Download the latest images button](docs/images/lab-space-weather.jpg)
+*SDO 193 and 171, GOES-18 SUVI and its color composites, the aurora
+forecast and the solar wind, with the **Download the latest images**
+button for stations without a GRB receiver.*
 
 ### USRG_GeoColor
 ![USRadioguy LUT (top) and USRG_GeoColor (bottom) for GOES-19, GOES-18 and Himawari-9](docs/images/usrg-geocolor.jpg)
@@ -210,6 +224,20 @@ ZIP**), extract it over `C:\USRadioguy-Groundstation`, and run
 **Running goestools without this package?** See
 [Updating in the goestools guide](https://github.com/creinemann/goestools/blob/main/USRADIOGUY.md#updating).
 
+### Choosing your EMWIN bulletins
+Every station shows a short list of national bulletins (space weather,
+radar outages, tropical outlooks, civil emergencies and so on). On top
+of that, **each viewer picks their own**, saved in their own browser:
+- **Earth Lab:** EMWIN → Bulletins → **Choose your bulletins**. Type
+  your NWS office (for example MKX) to see every product that office
+  has sent to your station, with the usual warnings and forecasts
+  ticked; add Great Lakes and marine forecasts, tsunami and tropical
+  bulletins by region, or search everything received.
+- **Classic site:** the **Tsunami & Tropical Bulletins** card and
+  **Load Additional Data** on the Other EMWIN page.
+
+Choices made on one site show up on the other.
+
 ### Space weather from the internet (optional)
 No GRB station? The installer asks *"Turn on space weather from the
 internet?"*. Answer **yes** to get the Sun from NASA SDO and GOES-18
@@ -223,7 +251,8 @@ copy of each image (skipping any saved in the last 10 minutes) into
 `spaceweather` in your imagery folder. Images build up a history each
 time someone presses it, and files older than 3 days are removed.
 The same button downloads NASA's own 24-hour SDO 193 and 171 movies
-(at most once an hour), which become the SDO loops. If
+(at most once an hour), which become the SDO loops. When the download
+finishes, press **Refresh the page** to see the new images and loops. If
 you also have a GRB folder, its images are used and the internet fills
 in the rest.
 
