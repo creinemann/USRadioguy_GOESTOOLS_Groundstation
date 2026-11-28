@@ -227,6 +227,8 @@ SPACE_NET_DIR=""
 if [ "$SPACE_NET" = yes ]; then
 	SPACE_NET_DIR="$DATA/spaceweather"
 	sudo mkdir -p "$SPACE_NET_DIR" && sudo chown www-data:"$RUN_USER" "$SPACE_NET_DIR" && sudo chmod 775 "$SPACE_NET_DIR"
+	# NASA's SDO movies are saved into the website's videos folder
+	mkdir -p "$REPO/web/videos" && sudo chgrp www-data "$REPO/web/videos" && sudo chmod 775 "$REPO/web/videos"
 fi
 
 # ------------------------------------------------------------------ website config
@@ -246,6 +248,7 @@ if [ -n "$SOLAR" ]; then
 fi
 mkdir -p "$REPO/web/videos"
 chmod 755 "$REPO" "$REPO/web" "$REPO/web/videos"
+[ -n "$SPACE_NET_DIR" ] && sudo chgrp www-data "$REPO/web/videos" && sudo chmod 775 "$REPO/web/videos"
 ok "web/config/*.ini, lab/lab-config.js, scripts/video24config.ini"
 
 # ------------------------------------------------------------------ Apache

@@ -397,6 +397,8 @@ maxUserFiles = 1000
         if vp and vp.lower().endswith(".mp4") and vp[:-4] not in seen:
             seen.add(vp[:-4])
             folder = net_dir if "{SWNET}" in text else solar_dir
+            if folder == net_dir and vp in ("SDO_193.mp4", "SDO_171.mp4"):
+                continue   # NASA's own movie is downloaded by the Space page button instead
             loops.append("[{}]\npaths = {}\n{}".format(vp[:-4], folder, "filter = {}\n".format(flt) if flt else ""))
     with open(a.videos_config, "w", encoding="utf-8") as f:
         f.write("""; 24-hour video loops - written by scripts/make-site-config.py

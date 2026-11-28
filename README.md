@@ -221,7 +221,9 @@ Nothing downloads by itself. The Earth Lab's **Space** page gets a
 **Download the latest images** button; pressing it fetches the newest
 copy of each image (skipping any saved in the last 10 minutes) into
 `spaceweather` in your imagery folder. Images build up a history each
-time someone presses it, and files older than 3 days are removed. If
+time someone presses it, and files older than 3 days are removed.
+The same button downloads NASA's own 24-hour SDO 193 and 171 movies
+(at most once an hour), which become the SDO loops. If
 you also have a GRB folder, its images are used and the internet fills
 in the rest.
 

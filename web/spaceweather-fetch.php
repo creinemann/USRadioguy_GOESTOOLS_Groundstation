@@ -10,7 +10,8 @@
  * the names the Space Weather pages (config/solar.ini) already read, so the pages,
  * timelines and 24-hour loops work the same as for a GRB station's images.
  * An image is skipped if the copy saved in the last 10 minutes is still fresh, and
- * files older than 3 days are removed.
+ * files older than 3 days are removed. NASA's 24-hour SDO 193 and 171 movies are
+ * downloaded too, into videos/ (at most once an hour), and become the SDO loops.
  */
 header('Content-Type: application/json');
 header('Cache-Control: no-store');
@@ -40,6 +41,14 @@ $images = [
 	['prefix' => 'SUVI303_',        'title' => 'GOES-18 SUVI 195/284/304', 'url' => 'https://www.ssec.wisc.edu/data/geo/images/suvi-goes-18/latest_suvi-goes-18_FE195FE284HE303_sun.jpg', 'crop' => [10, 10], 'label' => true],
 	['prefix' => 'SUVI093_',        'title' => 'GOES-18 SUVI 304/171/093', 'url' => 'https://www.ssec.wisc.edu/data/geo/images/suvi-goes-18/latest_suvi-goes-18_HE303FE171FE093_sun.jpg', 'crop' => [10, 10], 'label' => true],
 ];
+
+// NASA's own 24-hour SDO movies, saved straight into the website's videos folder
+// (the loops on the SDO pages). Re-downloaded at most once an hour.
+$videos = [
+	['file' => 'SDO_193.mp4', 'title' => 'SDO 193 Å movie', 'url' => 'https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_0193.mp4'],
+	['file' => 'SDO_171.mp4', 'title' => 'SDO 171 Å movie', 'url' => 'https://sdo.gsfc.nasa.gov/assets/img/latest/mpeg/latest_512_0171_synoptic.mp4'],
+];
+$videoDir = __DIR__ . '/videos';
 
 // one download at a time, however many people press the button
 $lock = fopen($dir . '/.fetch.lock', 'c');
@@ -112,11 +121,48 @@ foreach ($images as $img) {
 	else $result['failed'][] = $img['title'] . ': could not save';
 }
 
+// the movies: download to a temporary file, then have ffmpeg move the index to the
+// start of the file ("faststart") so browsers can play it; keep NASA's file if that fails
+$ffmpeg = trim((string) @shell_exec('command -v ffmpeg 2>/dev/null'));
+foreach ($videos as $v) {
+	$out = $videoDir . '/' . $v['file'];
+	if (is_file($out) && $now - filemtime($out) < 3600) { $result['fresh'][] = $v['title']; continue; }
+	if (!is_dir($videoDir) || !is_writable($videoDir)) { $result['failed'][] = $v['title'] . ': the web server cannot write to the videos folder'; continue; }
+	$tmp = $videoDir . '/.download-' . $v['file'];
+	$fh = fopen($tmp, 'wb');
+	$ch = curl_init($v['url']);
+	curl_setopt_array($ch, [
+		CURLOPT_FILE => $fh, CURLOPT_FOLLOWLOCATION => true, CURLOPT_MAXREDIRS => 3,
+		CURLOPT_CONNECTTIMEOUT => 10, CURLOPT_TIMEOUT => 120,
+		CURLOPT_USERAGENT => 'USRadioguy-GOESTOOLS-Groundstation (space weather page)',
+	]);
+	$okDl = curl_exec($ch);
+	$code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	$err = curl_error($ch);
+	curl_close($ch);
+	fclose($fh);
+	$head = @file_get_contents($tmp, false, null, 4, 4);
+	if (!$okDl || $code != 200 || filesize($tmp) < 10000 || $head !== 'ftyp') {
+		@unlink($tmp);
+		$result['failed'][] = $v['title'] . ': ' . ($err ?: ($code != 200 ? 'HTTP ' . $code : 'not a video'));
+		continue;
+	}
+	$fixed = $videoDir . '/.faststart-' . $v['file'];
+	$okFix = false;
+	if ($ffmpeg !== '') {
+		exec(escapeshellarg($ffmpeg) . ' -v error -y -i ' . escapeshellarg($tmp) . ' -c copy -an -movflags +faststart ' . escapeshellarg($fixed) . ' 2>&1', $o, $rc);
+		$okFix = $rc === 0 && is_file($fixed) && filesize($fixed) > 10000;
+	}
+	if ($okFix) { rename($fixed, $out); @unlink($tmp); }
+	else { @unlink($fixed); rename($tmp, $out); }
+	$result['saved'][] = $v['title'];
+}
+
 // tidy up: keep 3 days
 foreach (glob($dir . '/*.{jpg,png}', GLOB_BRACE) ?: [] as $f)
 	if ($now - filemtime($f) > 3 * 86400) @unlink($f);
 
 flock($lock, LOCK_UN);
 fclose($lock);
-$result['ok'] = count($result['failed']) < count($images);
+$result['ok'] = count($result['failed']) < count($images) + count($videos);
 done(200, $result);
