@@ -95,7 +95,15 @@ ask LOOPS      "Make 24-hour video loops? yes/no" "$([ $PI3 = 1 ] && echo no || 
 ask SHARE      "Share the imagery folder on your network, for a Windows PC website? yes/no" "no"
 ask SOLAR      "Folder of SDO/SUVI space weather images, e.g. from a GRB station (Enter = none)" "${PREV_SOLAR:-none}"
 [ "$SOLAR" = none ] && SOLAR=""
-for __k in SAT SDR GAIN BIAS_TEE STATION LOCATION LAT LON TZ_NAME NWS_STATE NWS_ZONE NWS_ORIG RADAR DATA KEEP_DAYS LOOPS SHARE SOLAR; do
+if [ -z "${SPACE_NET:-}" ] && [ "$NONINTERACTIVE" != 1 ]; then
+	echo "    Space weather from the internet: the Sun (NASA SDO, GOES-18 SUVI), aurora and solar wind"
+	echo "    forecasts (NOAA SWPC). This needs this Pi to be able to reach the internet. Nothing"
+	echo "    downloads by itself: images are fetched only when someone presses the download button"
+	echo "    on the Space Weather page."
+fi
+ask SPACE_NET  "Turn on space weather from the internet? yes/no" "no"
+case "$SPACE_NET" in y|Y|yes|YES|Yes) SPACE_NET=yes;; *) SPACE_NET=no;; esac
+for __k in SAT SDR GAIN BIAS_TEE STATION LOCATION LAT LON TZ_NAME NWS_STATE NWS_ZONE NWS_ORIG RADAR DATA KEEP_DAYS LOOPS SHARE SOLAR SPACE_NET; do
 	printf '%s=%s\n' "$__k" "${!__k}"
 done | sudo tee "$ANSWERS" >/dev/null
 
@@ -214,6 +222,13 @@ sudo mkdir -p "$DATA" && sudo chown "$RUN_USER": "$DATA" && sudo chmod 755 "$DAT
 ok "imagery folder $DATA"
 printf 'DATA="%s"\nKEEP_DAYS="%s"\nKEEP_TEXT_DAYS="2"\n' "$DATA" "$KEEP_DAYS" | sudo tee /etc/default/groundstation >/dev/null
 
+# space weather from the internet: a folder the web server can write to
+SPACE_NET_DIR=""
+if [ "$SPACE_NET" = yes ]; then
+	SPACE_NET_DIR="$DATA/spaceweather"
+	sudo mkdir -p "$SPACE_NET_DIR" && sudo chown www-data:"$RUN_USER" "$SPACE_NET_DIR" && sudo chmod 775 "$SPACE_NET_DIR"
+fi
+
 # ------------------------------------------------------------------ website config
 say "Website configuration"
 python3 "$REPO/scripts/make-site-config.py" --data "$DATA" --sat "$SAT" \
@@ -221,7 +236,10 @@ python3 "$REPO/scripts/make-site-config.py" --data "$DATA" --sat "$SAT" \
 	--videos-config "$REPO/scripts/video24config.ini" \
 	--name "$STATION" --location "$LOCATION" --lat "$LAT" --lon "$LON" --timezone "$TZ_NAME" \
 	--state "$NWS_STATE" --wxzone "$NWS_ZONE" --orig "$NWS_ORIG" --radar "$RADAR" \
-	${SOLAR:+--solar "$SOLAR"}
+	${SOLAR:+--solar "$SOLAR"} ${SPACE_NET_DIR:+--space-net "$SPACE_NET_DIR"}
+if [ -n "$SPACE_NET_DIR" ]; then
+	ok "Space weather from the internet turned on: press the button on the Space Weather page to download"
+fi
 if [ -n "$SOLAR" ]; then
 	if sudo -u www-data test -r "$SOLAR" -a -x "$SOLAR" 2>/dev/null; then ok "Space Weather pages turned on ($SOLAR)"
 	else warn "The web server can't read $SOLAR - make it readable (e.g. chmod o+rx) or the Space Weather pages stay empty"; fi

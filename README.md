@@ -210,6 +210,21 @@ ZIP**), extract it over `C:\USRadioguy-Groundstation`, and run
 **Running goestools without this package?** See
 [Updating in the goestools guide](https://github.com/creinemann/goestools/blob/main/USRADIOGUY.md#updating).
 
+### Space weather from the internet (optional)
+No GRB station? The installer asks *"Turn on space weather from the
+internet?"*. Answer **yes** to get the Sun from NASA SDO and GOES-18
+SUVI (UW-SSEC), plus NOAA SWPC aurora, solar wind (WSA-ENLIL) and
+geospace forecasts. **This needs the Pi to be able to reach the
+internet.**
+
+Nothing downloads by itself. The Earth Lab's **Space** page gets a
+**Download the latest images** button; pressing it fetches the newest
+copy of each image (skipping any saved in the last 10 minutes) into
+`spaceweather` in your imagery folder. Images build up a history each
+time someone presses it, and files older than 3 days are removed. If
+you also have a GRB folder, its images are used and the internet fills
+in the rest.
+
 ### Space Weather pages (optional, for GRB stations)
 GOES HRIT doesn't carry Sun imagery, but a **GRB** station does. If
 you have a folder of SDO/SUVI images (yours, or one shared from a GRB

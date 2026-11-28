@@ -679,14 +679,32 @@ function renderWeather()
 }
 
 // ------------------------------------------------------------------ SPACE WEATHER
-function renderSpace()
+function renderSpace(bust)
 {
-	var s = config.categories.solar;
+	var s = config.categories.solar, net = window.LAB_SPACENET === true;
 	main.innerHTML =
 	'<header class="page-head"><h1 class="display">Space weather</h1><p class="lede">The Sun in several wavelengths, plus the forecasts for aurora and geomagnetic storms. Choose an image to step through its history.</p></header>' +
+	(net ? '<div class="bul-panel" id="swNet"><h2 class="h3" style="margin-top:0">Latest images from the internet</h2>' +
+		'<p class="muted" style="margin-top:0">From NASA SDO, GOES-18 SUVI (UW-SSEC) and NOAA SWPC. Nothing downloads by itself: press the button to fetch the newest images. This station needs internet access for it.</p>' +
+		'<div class="reader-nav"><span class="muted" id="swNetMsg">' + (bust ? 'Updated just now.' : '') + '</span><button type="button" class="btn" id="swNetGo">Download the latest images</button></div></div>' : '') +
 	(s ? '<div class="gallery">' + Object.keys(s.data).map(function (k) {
-		return '<a href="#/imagery/solar/' + enc(k) + '"><div class="media"><img loading="lazy" alt="" src="' + API.img('solar', k, 480) + '"></div><h2 class="h3">' + esc(s.data[k].title) + '</h2></a>';
+		return '<a href="#/imagery/solar/' + enc(k) + '"><div class="media"><img loading="lazy" alt="" src="' + API.img('solar', k, 480) + (bust ? '&_=' + bust : '') + '" onerror="labNoThumb(this)"></div><h2 class="h3">' + esc(s.data[k].title) + '</h2></a>';
 	}).join('') + '</div>' : '<p class="empty">No space weather products are configured.</p>');
+	var go = document.getElementById('swNetGo');
+	if (!go) return;
+	go.addEventListener('click', function () {
+		var msg = document.getElementById('swNetMsg');
+		go.disabled = true; msg.textContent = 'Downloading, this takes up to a minute…';
+		fetch('../spaceweather-fetch.php', { method: 'POST', cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (r) {
+			if (!r.ok && r.error) { msg.textContent = r.error; go.disabled = false; return; }
+			var parts = [];
+			if (r.saved && r.saved.length) parts.push(r.saved.length + ' new image' + (r.saved.length == 1 ? '' : 's'));
+			if (r.fresh && r.fresh.length) parts.push(r.fresh.length + ' already up to date (under 10 minutes old)');
+			if (r.failed && r.failed.length) parts.push(r.failed.length + ' could not be downloaded: ' + r.failed.join('; '));
+			renderSpace(Date.now());
+			var m2 = document.getElementById('swNetMsg'); if (m2) m2.textContent = parts.join('. ') + '.';
+		}).catch(function () { msg.textContent = 'The download did not work. Check that this station can reach the internet.'; go.disabled = false; });
+	});
 }
 
 // ------------------------------------------------------------------ RECEIVERS

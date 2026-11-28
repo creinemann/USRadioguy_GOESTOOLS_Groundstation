@@ -205,6 +205,9 @@ def main():
     ap.add_argument("--solar", default="", metavar="DIR",
                     help="folder of SDO/SUVI space weather images (e.g. from a GRB station); "
                          "turns on the Space Weather pages")
+    ap.add_argument("--space-net", default="", metavar="DIR",
+                    help="folder for space weather images downloaded from the internet when someone presses "
+                         "the button on the Space Weather page (turns on the Space Weather pages)")
     a = ap.parse_args()
     if len(a.sat) != len(a.goesproc):
         sys.exit("--sat and --goesproc must be given the same number of times")
@@ -240,10 +243,11 @@ def main():
 
     # ---- solar.ini (Space Weather: SDO / SUVI images from a GRB station, if the user has them)
     solar_items, solar_dir = [], ""
-    if a.solar:
-        solar_dir = a.solar.replace("\\", "/").rstrip("/")
+    net_dir = a.space_net.replace("\\", "/").rstrip("/")
+    if a.solar or net_dir:
+        solar_dir = a.solar.replace("\\", "/").rstrip("/") if a.solar else net_dir
         names = []
-        for root, _, files in os.walk(a.solar):
+        for root, _, files in os.walk(a.solar or "/nonexistent"):
             names += files
             if len(names) > 20000:
                 break
@@ -254,13 +258,20 @@ def main():
             if not m or m.group(1) == "_category_":
                 keep.append(sec); continue
             flt = section_value(sec, "filter")
+            if a.solar and net_dir and names and flt and not any(flt in n for n in names):
+                # not made by the GRB station: use the internet download instead
+                sec = sec.replace("{SDO}", "{SWNET}")
+                keep.append(sec); found.append(m.group(1))
+                solar_items.append((m.group(1), sec, flt))
+                continue
             if not names or not flt or any(flt in n for n in names):
                 keep.append(sec); found.append(m.group(1))
                 solar_items.append((m.group(1), sec, flt))
         with open(os.path.join(cfgdir, "solar.ini"), "w", encoding="utf-8") as f:
             f.write(header + "".join(keep))
         print("  Space weather: {} product(s) from {}{}".format(
-            len(found), a.solar, "" if names else " (folder empty or not found yet - all listed)"))
+            len(found), " + ".join(x for x in (a.solar, net_dir and "the internet (button on the page)") if x),
+            "" if names or not a.solar else " (folder empty or not found yet - all listed)"))
     elif os.path.exists(os.path.join(cfgdir, "solar.ini")):
         os.remove(os.path.join(cfgdir, "solar.ini"))
 
@@ -271,6 +282,8 @@ def main():
     paths = "\n".join("{} = {}".format(t, data) for t in ("GOES19", "GOES18"))
     if solar_dir:
         paths += "\nSDO = " + solar_dir
+    if net_dir:
+        paths += "\nSWNET = " + net_dir
     city = a.city or (a.location.split(",")[0].upper() if a.location else "")
     with open(os.path.join(cfgdir, "config.ini"), "w", encoding="utf-8") as f:
         f.write("""; Written by scripts/make-site-config.py
@@ -307,7 +320,9 @@ timezone = {tz}
 ini = otheremwin.ini
 allowUserLoader = true
 maxUserFiles = 1000
-""".format(name=a.name, theme=a.theme, data=data, nws=nws_sat, cats="\n".join(cats), paths=paths,
+{spacenet}""".format(spacenet=("\n[spaceweather]\n; downloaded only when someone presses the button on the Space Weather page\n"
+                    "internet = true\nfolder = " + net_dir + "\n") if net_dir else "",
+           name=a.name, theme=a.theme, data=data, nws=nws_sat, cats="\n".join(cats), paths=paths,
            radar=a.radar, state=a.state, wxzone=a.wxzone, orig=a.orig, city=city,
            lat=a.lat, lon=a.lon, tz=a.timezone))
 
@@ -361,7 +376,9 @@ maxUserFiles = 1000
         f.write("/*\n * lab-config.js - satellites and products on the Lab Overview page.\n"
                 " * Written by scripts/make-site-config.py. Each product is [ id, label ] where\n"
                 " * id is a section of config/abi.ini; rx is the receiver id in config/station.ini.\n */\n"
-                "window.LAB_SATS = " + json.dumps(lab, indent=1, ensure_ascii=False) + ";\n")
+                "window.LAB_SATS = " + json.dumps(lab, indent=1, ensure_ascii=False) + ";\n"
+                "// space weather from the internet: a download button on the Space Weather page\n"
+                "window.LAB_SPACENET = " + ("true" if net_dir else "false") + ";\n")
 
     # ---- video24config.ini (one loop per videoPath, Raspberry Pi friendly)
     loops, seen = [], set()
