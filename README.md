@@ -245,8 +245,8 @@ Space weather **alerts** and EMWIN **space weather messages** come over
 HRIT, so they work on every station, with or without this folder.
 
 ### Viewing from outside your home
-By default the site is visible **only on your own network**. **Do not
-port-forward** it to the internet. For remote access, install
+By default the site is visible **only on your own network**. <mark>**Do not
+port-forward**</mark> it to the internet. For remote access, install
 [Tailscale](https://tailscale.com) on the Pi and on your phone or laptop.
 
 ## Repository layout
