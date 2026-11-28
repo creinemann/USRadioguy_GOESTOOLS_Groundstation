@@ -48,6 +48,7 @@ $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES); };
 
 	<script>window.STATION = <?php echo json_encode($station); ?>;</script>
 	<script src="lab-config.js?v=<?php echo $v('lab-config.js'); ?>"></script>
+	<script src="../emwin-catalog.js?v=<?php echo @filemtime(__DIR__ . '/../emwin-catalog.js'); ?>"></script>
 	<script src="lab.js?v=<?php echo $v('lab.js'); ?>"></script>
 </body>
 </html>

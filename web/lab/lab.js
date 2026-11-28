@@ -570,6 +570,16 @@ function bulletinPicker(panel, all, stationList, mine, hidden)
 		'<datalist id="bulOffices">' + Object.keys(offices).sort().map(function (o) { return '<option value="' + esc(o) + '">'; }).join('') + '</datalist>' +
 		'<div id="bulOfficeList" style="margin-top:10px">' + officeList(office) + '</div>' +
 		(lakes.length ? '<h3>Great Lakes and marine forecasts</h3>' + lakes.map(function (id) { return box(id, pilName(id.substr(0, 3)) + ' (' + id.substr(3) + ')', have[id], id); }).join('') : '') +
+		(window.EMWIN_CATALOG ? '<h3>Tsunami and tropical bulletins</h3><p class="muted" style="margin:0 0 6px">From the NWS EMWIN product catalog, by region. These only have messages when the NWS issues them, for example during a hurricane or tsunami.</p>' +
+			EMWIN_CATALOG.map(function (g) {
+				var n = 0, inner = g.regions.map(function (r) {
+					return '<div style="margin:6px 0 10px 4px"><b>' + esc(r.name) + '</b>' + r.items.map(function (it) {
+						var id = emwinCatalogId(it.id); if (have[id]) n++;
+						return box(id, emwinCatalogTitle(r, it), have[id]).replace('<span>' + esc(emwinCatalogTitle(r, it)), '<span>' + esc(it.title));
+					}).join('') + '</div>';
+				}).join('');
+				return '<details style="margin:4px 0"' + (n ? ' open' : '') + '><summary style="cursor:pointer">' + esc(g.group) + (n ? ' <span class="muted">' + n + ' on</span>' : '') + '</summary>' + inner + '</details>';
+			}).join('') : '') +
 		'<h3>Any other bulletin received</h3>' +
 		'<input id="bulFind" placeholder="Search, e.g. RWR or SWODY1" style="width:16em" aria-label="Search all received bulletins"><div id="bulFound"></div>' +
 		(stationList.length ? '<h3>The station\'s bulletins</h3>' + stationList.map(function (b) {
@@ -593,7 +603,9 @@ function bulletinPicker(panel, all, stationList, mine, hidden)
 			if (cb.checked && at < 0) keep.push({ identifier: id, title: cb.dataset.title, format: 'paragraph', truncate: 0 });
 			if (!cb.checked && at >= 0) keep.splice(at, 1);
 		});
-		saveMyBulletins(keep);
+		if (window.emwinSaveUserCards ? !emwinSaveUserCards(keep) : (saveMyBulletins(keep), false)) {
+			alert('That is too many bulletins to remember in this browser. Untick a few and save again.'); return;
+		}
 		var hide = {}; panel.querySelectorAll('input[data-station]').forEach(function (cb) { if (!cb.checked) hide[cb.dataset.station] = 1; });
 		try { localStorage.setItem('labHiddenBulletins', JSON.stringify(hide)); localStorage.setItem('labNwsOffice', offIn.value.toUpperCase()); } catch (e) {}
 		location.reload();

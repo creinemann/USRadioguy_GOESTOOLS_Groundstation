@@ -987,6 +987,13 @@ function menuSelect(menuSlug)
 		barTitle.innerHTML = "Other EMWIN";
 		mainContent.innerHTML = "";
 		
+		//USRadioguy: tsunami and tropical bulletins from the NWS EMWIN catalog, by region (emwin-catalog.js)
+		if(config.allowUserLoader && typeof emwinCatalogPicker == 'function')
+		{
+			renderCollapsingCard("emwinCatalog", "Tsunami &amp; Tropical Bulletins", "prettyBoxContent", "weatherBody");
+			emwinCatalogPicker(document.getElementById('emwinCatalogContent').firstChild);
+		}
+		
 		if(config.allowUserLoader)
 		{
 			renderCollapsingCard("emwinLoader", "Load Additional Data", "prettyBoxContent", "weatherBody");

@@ -86,6 +86,7 @@ if(file_exists("$programPath/config/config.ini"))
 		$gaId = preg_replace('/[^A-Za-z0-9-]/', '', (string)$stationCfg['site']['analytics_id']);
 		if ($gaId !== '') echo "<script async src=\"https://www.googletagmanager.com/gtag/js?id=$gaId\"></script><script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','$gaId');</script>\n";
 		?>
+		<script src='<?php echo $programURL; ?>/emwin-catalog.js?v=<?php echo @filemtime(__DIR__ . '/emwin-catalog.js'); ?>'></script>
 		<script src='<?php echo $programURL; ?>/script.js?v=<?php echo @filemtime(__DIR__ . '/script.js'); ?>'></script>
 		<script src="<?php echo $programURL; ?>/lightgallery/plugins/zoom/lg-zoom.umd.js?v=20230923"></script>
 		<script src="<?php echo $programURL; ?>/lightgallery/plugins/jumpto/lg-jumpto.umd.js?v=20220811"></script>
