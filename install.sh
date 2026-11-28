@@ -103,7 +103,9 @@ if [ -z "${SPACE_NET:-}" ] && [ "$NONINTERACTIVE" != 1 ]; then
 fi
 ask SPACE_NET  "Turn on space weather from the internet? yes/no" "no"
 case "$SPACE_NET" in y|Y|yes|YES|Yes) SPACE_NET=yes;; *) SPACE_NET=no;; esac
-for __k in SAT SDR GAIN BIAS_TEE STATION LOCATION LAT LON TZ_NAME NWS_STATE NWS_ZONE NWS_ORIG RADAR DATA KEEP_DAYS LOOPS SHARE SOLAR SPACE_NET; do
+ask OS_UPDATES "Install Raspberry Pi OS updates now, and security updates automatically from now on? yes/no (recommended: yes)" "yes"
+case "$OS_UPDATES" in n|N|no|NO|No) OS_UPDATES=no;; *) OS_UPDATES=yes;; esac
+for __k in SAT SDR GAIN BIAS_TEE STATION LOCATION LAT LON TZ_NAME NWS_STATE NWS_ZONE NWS_ORIG RADAR DATA KEEP_DAYS LOOPS SHARE SOLAR SPACE_NET OS_UPDATES; do
 	printf '%s=%s\n' "$__k" "${!__k}"
 done | sudo tee "$ANSWERS" >/dev/null
 
@@ -113,9 +115,23 @@ PKGS="git build-essential cmake pkg-config zlib1g-dev libopencv-dev libproj-dev 
       apache2 php libapache2-mod-php php-gd php-xml php-mbstring php-curl ffmpeg python3 fonts-dejavu-core rsync"
 [ "$SDR" = airspy ] && PKGS="$PKGS libairspy-dev airspy"
 sudo apt-get update -q || warn "apt update had errors - continuing with what is available"
+if [ "$OS_UPDATES" = yes ]; then
+	# operating system updates (security fixes for sudo, apt, the kernel, ...); keeps your own config files
+	say "Installing Raspberry Pi OS updates"
+	sudo DEBIAN_FRONTEND=noninteractive apt-get full-upgrade -y -q \
+		-o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
+		&& ok "operating system up to date" || warn "some OS updates failed - run: sudo apt update && sudo apt full-upgrade"
+	PKGS="$PKGS unattended-upgrades"
+fi
 # shellcheck disable=SC2086
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -q $PKGS
 ok "packages installed"
+if [ "$OS_UPDATES" = yes ]; then
+	# Debian security updates install by themselves each day (no automatic reboots)
+	printf 'APT::Periodic::Update-Package-Lists "1";\nAPT::Periodic::Unattended-Upgrade "1";\n' | sudo tee /etc/apt/apt.conf.d/20auto-upgrades >/dev/null
+	sudo systemctl enable --now unattended-upgrades >/dev/null 2>&1 || true
+	ok "automatic security updates on (turn off: sudo dpkg-reconfigure unattended-upgrades)"
+fi
 
 if [ "$SDR" = rtlsdr ] && [ ! -f /etc/modprobe.d/blacklist-rtl-dvb.conf ]; then
 	echo "blacklist dvb_usb_rtl28xxu" | sudo tee /etc/modprobe.d/blacklist-rtl-dvb.conf >/dev/null
@@ -374,7 +390,7 @@ cat <<EOF
    ✅  Done!
 
    Open the website from any browser on your network:
-       http://${IP:-<this-pi-address>}/          classic Vitality view
+       http://${IP:-<this-pi-address>}/          classic view
        http://${IP:-<this-pi-address>}/lab/      Lab view
 
    Images appear a few minutes after goesrecv locks on (point the dish,
@@ -391,6 +407,11 @@ cat <<EOF
      * USRadioguy additions (Lab view, HUD, themes, LUTs, Himawari support,
        Pi installer, Linux scripts): (c) 2023-2026 Carl Reinemann
          https://usradioguy.com/
+
+   Security: keep the site on your home network (don't port-forward it);
+   for access from outside, use Tailscale (see README). Keep the Pi
+   updated:  sudo apt update && sudo apt full-upgrade
+$( [ -f /var/run/reboot-required ] && printf '\n   ⚠️  OS updates need a restart to finish:  sudo reboot\n' )
 
    Please visit usradioguy.com and donate today to help keep the site
    and software running!   ☕  https://ko-fi.com/usradioguy

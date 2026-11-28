@@ -249,6 +249,17 @@ By default the site is visible **only on your own network**. <mark>**Do not
 port-forward**</mark> it to the internet. For remote access, install
 [Tailscale](https://tailscale.com) on the Pi and on your phone or laptop.
 
+### Keeping the Pi patched
+A vulnerability scan of a freshly installed Pi will list Raspberry Pi
+OS packages with updates waiting (sudo, apt, the kernel, firmware...).
+Those come from the operating system image, not from this package. The
+installer asks *"Install Raspberry Pi OS updates now, and security
+updates automatically from now on?"*: answer **yes** (the default) and
+it runs `apt full-upgrade` and turns on Debian's `unattended-upgrades`,
+which installs security fixes every day (it never reboots by itself).
+Still worth doing now and then, and after a big update:
+`sudo apt update && sudo apt full-upgrade && sudo reboot`.
+
 ## Repository layout
 ```
 install.sh                  Raspberry Pi installer
