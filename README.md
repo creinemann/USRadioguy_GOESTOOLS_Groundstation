@@ -78,8 +78,8 @@ the software. — Carl*
   memory and disk.
 - **24-hour video loops** of every product, rebuilt automatically.
 - **Nightly cleanup**, so the SD card never fills up.
-- **Themes:** Ground Station, Apollo Panel, Starship Ops, NWS Amber and
-  more.
+- **Themes:** Living Earth, Ground Station, Apollo Panel, Starship Ops,
+  NWS Amber and more.
 
 ## Screenshots
 All taken at the USRadioguy station in Horicon, Wisconsin.
@@ -121,8 +121,8 @@ Choose a theme under **Settings → Web App Theme** in the classic view.
 | **Apollo Panel (1969):** gray panel plates, green readouts and lit annunciator buttons | **Starship Ops Console:** elbow frames and pill buttons, inspired by sci-fi starship consoles |
 | ![Ground Station HUD theme showing current weather and the 7-day forecast](docs/images/theme-groundstation-weather.jpg) | ![USRadioguy theme showing full disk imagery, the night LUT and Himawari-9 water vapor](docs/images/theme-usradioguy-fulldisk.jpg) |
 | **Ground Station HUD:** cyan holographic mission display, shown on the Current Weather page | **USRadioguy:** the station's house style, shown with full disk, the USRadioguy LUT and Himawari-9 water vapor |
-| ![Starship Ops Console theme showing current weather and the 7-day forecast](docs/images/theme-starshipops-weather.jpg) | |
-| **Current Weather:** local conditions, radar and forecast from the NWS data your dish receives (Starship Ops) | |
+| ![Starship Ops Console theme showing current weather and the 7-day forecast](docs/images/theme-starshipops-weather.jpg) | ![Living Earth theme: the latest GeoColor full disk circled by the site's pages, over a soft forest background](docs/images/theme-living-earth.jpg) |
+| **Current Weather:** local conditions, radar and forecast from the NWS data your dish receives (Starship Ops) | **Living Earth (new):** forest, moss and sand over a soft woodland background. Its **Earth** home page puts your latest GeoColor full disk in the middle, with every page of the site on a slowly turning ring around it |
 
 ## What you need
 | | |
