@@ -93,6 +93,21 @@ window.EMWIN_CATALOG = [
 	] }
 ];
 
+// Cookies are written exactly the way the classic site's setCookie() does (same domain
+// and path), so the classic site and the Lab share one copy instead of two.
+window.vgSetCookie = function (name, value, remove)
+{
+	var e = new Date(); e.setDate(e.getDate() + (remove ? -1 : 365));
+	var prefix = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/.test(document.domain) ? '' : '.';
+	document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + e.toUTCString() + ';path=/;domain=' + prefix + document.domain;
+};
+window.vgGetCookie = function (name)
+{
+	var m = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+	if (!m) return '';
+	try { return decodeURIComponent(m[1]); } catch (e) { return ''; }
+};
+
 // --- shared cookie helpers (same format as the classic site's "Load Additional Data") ---
 window.emwinUserCards = function ()
 {
@@ -111,9 +126,7 @@ window.emwinSaveUserCards = function (cards)
 		return [btoa(b.identifier).replace(/=/g, '-'), String(b.title).replace(/[!~<>]/g, ''), b.format == 'formatted' ? 0 : 1, b.truncate || 0].join('!');
 	}).join('~');
 	if (v.length > 3800) return false;   // a browser keeps at most about 4 KB per cookie
-	var host = location.hostname, dom = /^[\d.]+$/.test(host) || host.indexOf('.') < 0 ? '' : ';domain=.' + host;
-	if (v) document.cookie = 'otheremwin=' + encodeURIComponent(v) + ';expires=' + new Date(Date.now() + 365 * 864e5).toUTCString() + ';path=/' + dom;
-	else document.cookie = 'otheremwin=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/' + dom;
+	vgSetCookie('otheremwin', v, !v);
 	return true;
 };
 // identifiers as the catalog writes them, wrapped so "A|B" stays one pattern

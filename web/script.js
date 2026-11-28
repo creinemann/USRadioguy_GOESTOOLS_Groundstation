@@ -2514,7 +2514,7 @@ function renderGroundStation()
 	var html = "<div class='hudGrid'>";
 	HUD_STATIONS.forEach(function(st){ html += hudStationPanels(st); });
 	html +=
-		"<div class='hudSection'>Processing PC <small>VITALITY GOES SERVER</small></div>" +
+		"<div class='hudSection'>Processing PC <small>WEB SERVER</small></div>" +
 		"<div class='hudPanel wide'><div class='hudTitle'>Processing PC <small id='hudHost'>--</small></div><div class='hudRings'>" +
 			hudRing('hudCpu', 'CPU', '%') + hudRing('hudRam', 'Memory', '%') + hudRing('hudGpu', 'GPU', '%') + hudRing('hudGpuT', 'GPU Temp', '°C') +
 		"</div><div class='hudNote' id='hudCpuName'>&nbsp;</div></div>" +

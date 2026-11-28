@@ -23,7 +23,7 @@ $programURL = str_replace(str_replace("\\", "/", $_SERVER['DOCUMENT_ROOT']), "",
 
 //Load data from config
 require_once("$programPath/functions.php");
-$siteTitle = "Vitality GOES";
+$siteTitle = "Ground Station";
 $themeColor = "#111111";
 
 if(file_exists("$programPath/config/config.ini"))

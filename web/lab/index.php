@@ -32,6 +32,7 @@ $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES); };
 			<a href="#/weather" data-route="weather">Weather</a>
 			<a href="#/space" data-route="space">Space weather</a>
 			<a href="#/receivers" data-route="receivers">Receivers</a>
+			<a href="#/settings" data-route="settings">Settings</a>
 		</nav>
 		<div class="clocks" aria-label="Current time">
 			<div><span class="clock-label">UTC</span><time id="clockUtc">--:--:--</time></div>
@@ -43,7 +44,7 @@ $h = function ($s) { return htmlspecialchars((string)$s, ENT_QUOTES); };
 
 	<footer class="foot">
 		<p><?php echo $h($station['footer']); ?>
-		Solar imagery courtesy of NASA/SDO and NOAA. Built on <a href="https://github.com/JVital2013/vitality-goes">Vitality GOES</a>. <a href="../">Classic view</a></p>
+		Solar imagery courtesy of NASA/SDO and NOAA. <a href="../">Classic view</a></p>
 	</footer>
 
 	<script>window.STATION = <?php echo json_encode($station); ?>;</script>

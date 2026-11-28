@@ -22,7 +22,8 @@ var API = {
 	meta: function (id, sub) { return '../dataHandler.php?type=metadata&id=' + enc(id) + '&subid=' + enc(sub); },
 	img: function (id, sub, w, t) { return 'img.php?id=' + enc(id) + '&subid=' + enc(sub) + '&w=' + w + (t ? '&t=' + t : ''); },
 	orig: function (id, sub, t) { return '../dataHandler.php?type=data&id=' + enc(id) + '&subid=' + enc(sub) + (t ? '&timestamp=' + t : ''); },
-	video: function (v) { return '../videos/' + encodeURIComponent(v); },
+	// ?b= changes after a space weather download, so the browser fetches new loops
+	video: function (v) { var b = ''; try { b = localStorage.getItem('labVideoBust') || ''; } catch (e) {} return '../videos/' + encodeURIComponent(v) + (b ? '?b=' + b : ''); },
 	weather: '../dataHandler.php?type=weatherJSON',
 	stats: function (part, st) { return '../station_stats.php?part=' + part + (st ? '&st=' + st : ''); }
 };
@@ -717,8 +718,14 @@ function renderSpace(bust)
 			if (r.saved && r.saved.length) parts.push(r.saved.length + ' new image' + (r.saved.length == 1 ? '' : 's'));
 			if (r.fresh && r.fresh.length) parts.push(r.fresh.length + ' already up to date (under 10 minutes old)');
 			if (r.failed && r.failed.length) parts.push(r.failed.length + ' could not be downloaded: ' + r.failed.join('; '));
+			try { localStorage.setItem('labVideoBust', String(Date.now())); } catch (e) {}
 			renderSpace(Date.now());
-			var m2 = document.getElementById('swNetMsg'); if (m2) m2.textContent = parts.join('. ') + '.';
+			var m2 = document.getElementById('swNetMsg');
+			if (m2) {
+				m2.textContent = parts.join('. ') + '. ';
+				m2.insertAdjacentHTML('beforeend', '<button type="button" class="btn ghost" id="swNetReload">Refresh the page</button>');
+				document.getElementById('swNetReload').addEventListener('click', function () { location.reload(); });
+			}
 		}).catch(function () { msg.textContent = 'The download did not work. Check that this station can reach the internet.'; go.disabled = false; });
 	});
 }
@@ -774,6 +781,99 @@ function renderReceivers()
 }
 function uptime(s) { if (!s) return '–'; var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600); return (d ? d + (d == 1 ? ' day ' : ' days ') : '') + h + (h == 1 ? ' hour' : ' hours'); }
 
+// ------------------------------------------------------------------ LOCAL SETTINGS
+// The same location profiles as the classic site's Local Settings page (cookies
+// "localSettings" and "selectedProfile"), so a profile saved on either site is used by both.
+var PROFILE_KEYS = ['city', 'lat', 'lon', 'orig', 'radarCode', 'rwrOrig', 'stateAbbr', 'timezone', 'wxZone'];
+function readProfiles()
+{
+	return (vgGetCookie('localSettings') || '').split('~').map(function (p) {
+		var v = p.split('!'); if (v.length != 9) return null;
+		var o = {}; PROFILE_KEYS.forEach(function (k, i) { o[k] = v[i]; }); return o;
+	}).filter(Boolean);
+}
+function saveProfiles(list) { vgSetCookie('localSettings', list.map(function (o) { return PROFILE_KEYS.map(function (k) { return String(o[k] || '').replace(/[!~]/g, ''); }).join('!'); }).join('~')); }
+function renderSettings()
+{
+	main.innerHTML = '<header class="page-head"><h1 class="display">Local settings</h1><p class="lede">Where you are, for the local forecast, radar and weather roundup, and the look of the classic site. Saved in this browser only, and shared with the classic site\'s Local Settings.</p></header><div id="setBody"><p class="caption">Loading…</p></div>';
+	// the server fills in the station's own profile (number 0) the first time
+	fetch('../dataHandler.php?type=preload', { cache: 'no-store' }).catch(function () {}).then(function () {
+		var profiles = readProfiles(), sel = parseInt(vgGetCookie('selectedProfile'), 10) || 0;
+		if (!profiles.length) { document.getElementById('setBody').innerHTML = '<p class="empty">Location settings need EMWIN data from this station. They appear once EMWIN bulletins are being received.</p>'; themeCard(document.getElementById('setBody'), true); return; }
+		if (sel >= profiles.length) sel = 0;
+		var p = profiles[sel], locked = sel == 0;
+		function field(id, label, input) { return '<label class="set-row"><span>' + label + '</span>' + input + '</label>'; }
+		function selectEl(id) { return '<select id="set_' + id + '"' + (locked ? ' disabled' : '') + '><option value="' + esc(p[id]) + '">' + esc(p[id] || '…') + '</option></select>'; }
+		document.getElementById('setBody').innerHTML = (config.showEmwinInfo === false ? '' :
+			'<section class="bul-panel"><h2 class="h3" style="margin-top:0">Location</h2>' +
+			'<div class="reader-nav" style="margin-bottom:14px"><label class="set-row" style="margin:0"><span>Profile</span><select id="set_profile">' + profiles.map(function (o, i) {
+				return '<option value="' + i + '"' + (i == sel ? ' selected' : '') + '>' + esc(i == 0 ? 'Ground station defaults' : (o.city ? titleCaseKeep(o.city.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); })) : o.wxZone) + ', ' + o.stateAbbr) + '</option>';
+			}).join('') + '</select></label>' +
+			'<span><button type="button" class="btn ghost" id="set_add"' + (profiles.length >= 10 ? ' disabled' : '') + '>Add a profile</button> <button type="button" class="btn ghost" id="set_del"' + (locked ? ' disabled' : '') + '>Delete</button></span></div>' +
+			(locked ? '<p class="muted">These are the station\'s own settings. To use another place, press <b>Add a profile</b>, then change it.</p>' : '') +
+			field('timezone', 'Time zone', selectEl('timezone')) +
+			field('radarCode', 'Radar region', selectEl('radarCode')) +
+			field('stateAbbr', 'State or territory', selectEl('stateAbbr')) +
+			field('lat', 'Latitude', '<input id="set_lat" value="' + esc(p.lat) + '" style="width:8em"' + (locked ? ' disabled' : '') + '>') +
+			field('lon', 'Longitude', '<input id="set_lon" value="' + esc(p.lon) + '" style="width:8em"' + (locked ? ' disabled' : '') + '>') +
+			field('orig', 'NWS office', selectEl('orig')) +
+			field('wxZone', 'Forecast zone', selectEl('wxZone')) +
+			field('rwrOrig', 'NWS office (weather roundup)', selectEl('rwrOrig')) +
+			field('city', 'City (weather roundup)', selectEl('city')) +
+			(locked ? '' : '<div class="reader-nav" style="margin-top:16px"><span class="muted" id="set_msg"></span><button type="button" class="btn" id="set_save">Save</button></div>') +
+			'</section>');
+		themeCard(document.getElementById('setBody'));
+		if (config.showEmwinInfo === false) return;
+
+		function fill(id, items, value) {
+			var s = document.getElementById('set_' + id); if (!s) return;
+			s.innerHTML = items.map(function (it) { return '<option value="' + esc(it[0]) + '">' + esc(it[1]) + '</option>'; }).join('');
+			s.value = value; if (s.value != value && value) s.insertAdjacentHTML('afterbegin', '<option value="' + esc(value) + '" selected>' + esc(value) + '</option>');
+		}
+		function zones(orig) { getJSON('../dataHandler.php?type=settings&dropdown=wxZone&orig=' + encodeURIComponent(orig)).then(function (z) { fill('wxZone', z.map(function (x) { return [x.wxZone, x.wxZone + ' - ' + x.city]; }), p.wxZone); }).catch(function () {}); }
+		function cities(rwr) { getJSON('../dataHandler.php?type=settings&dropdown=city&rwrOrig=' + encodeURIComponent(rwr)).then(function (c) { fill('city', c.map(function (x) { return [x, x.toLowerCase().replace(/\b\w/g, function (m) { return m.toUpperCase(); })]; }), p.city); }).catch(function () {}); }
+		getJSON('../dataHandler.php?type=settings&dropdown=general').then(function (g) {
+			fill('timezone', (g.timezone || []).map(function (x) { return [x, x]; }), p.timezone);
+			fill('radarCode', (g.radar || []).map(function (x) { return [x, x]; }), p.radarCode);
+			fill('stateAbbr', (g.stateAbbr || []).map(function (x) { return [x, x]; }), p.stateAbbr);
+			fill('orig', (g.orig || []).map(function (x) { return [x.orig + x.state, x.state + ' - ' + x.orig]; }), p.orig);
+			fill('rwrOrig', (g.rwrOrig || []).map(function (x) { return [x.orig + x.state, x.state + ' - ' + x.orig]; }), p.rwrOrig);
+		}).catch(function () {});
+		zones(p.orig); cities(p.rwrOrig);
+		document.getElementById('set_orig').addEventListener('change', function () { zones(this.value); });
+		document.getElementById('set_rwrOrig').addEventListener('change', function () { cities(this.value); });
+		document.getElementById('set_profile').addEventListener('change', function () { vgSetCookie('selectedProfile', this.value); renderSettings(); });
+		document.getElementById('set_add').addEventListener('click', function () {
+			profiles.push(JSON.parse(JSON.stringify(p))); saveProfiles(profiles); vgSetCookie('selectedProfile', profiles.length - 1); renderSettings();
+		});
+		document.getElementById('set_del').addEventListener('click', function () {
+			if (locked || !confirm('Delete this location profile?')) return;
+			profiles.splice(sel, 1); saveProfiles(profiles); vgSetCookie('selectedProfile', 0); renderSettings();
+		});
+		var save = document.getElementById('set_save');
+		if (save) save.addEventListener('click', function () {
+			['timezone', 'radarCode', 'stateAbbr', 'orig', 'wxZone', 'rwrOrig', 'city', 'lat', 'lon'].forEach(function (k) { profiles[sel][k] = document.getElementById('set_' + k).value.trim(); });
+			saveProfiles(profiles);
+			// the server checks the profile and resets it if something is not valid
+			fetch('../dataHandler.php', { cache: 'no-store' }).then(function () {
+				var back = readProfiles()[sel];
+				document.getElementById('set_msg').textContent = back && back.wxZone == profiles[sel].wxZone ? 'Saved. Weather and radar pages now use this place.' : 'The station could not use those settings, so they were reset.';
+			});
+		});
+	});
+}
+// the classic site's theme (the Lab has one look)
+function themeCard(root, alone)
+{
+	root.insertAdjacentHTML('beforeend', '<section class="bul-panel"><h2 class="h3" style="margin-top:0">Classic site theme</h2><p class="muted" style="margin-top:0">How the classic view looks in this browser.</p><select id="set_theme" aria-label="Classic site theme"><option>…</option></select> <a href="../" class="btn ghost">Open the classic view</a></section>');
+	getJSON('../dataHandler.php?type=settings&dropdown=theme').then(function (t) {
+		var s = document.getElementById('set_theme'); if (!s) return;
+		s.innerHTML = Object.keys(t).map(function (k) { return '<option value="' + esc(k) + '">' + esc(t[k]) + '</option>'; }).join('');
+		s.value = vgGetCookie('selectedTheme') || config.theme || '';
+		s.addEventListener('change', function () { vgSetCookie('selectedTheme', s.value); });
+	}).catch(function () {});
+}
+
 // ------------------------------------------------------------------ router
 function route()
 {
@@ -787,8 +887,9 @@ function route()
 	else if (page == 'weather') renderWeather();
 	else if (page == 'space') renderSpace();
 	else if (page == 'receivers') renderReceivers();
+	else if (page == 'settings') renderSettings();
 	else renderOverview();
-	document.title = (page == 'overview' ? '' : (page == 'emwin' ? 'EMWIN' : page.charAt(0).toUpperCase() + page.slice(1)) + ', ') + 'USradioguy ground station';
+	document.title = (page == 'overview' ? '' : (page == 'emwin' ? 'EMWIN' : page == 'settings' ? 'Local settings' : page.charAt(0).toUpperCase() + page.slice(1)) + ', ') + 'USradioguy ground station';
 }
 
 getJSON(API.preload).then(function (c) { config = c; route(); window.addEventListener('hashchange', route); })

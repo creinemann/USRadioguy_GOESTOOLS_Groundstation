@@ -402,3 +402,9 @@ body { overflow-x: clip; }
 .bul-panel h3 { font-size: 15px; margin: 22px 0 6px; }
 .bul-panel input:not([type]), .bul-panel input[list] { background: transparent; color: inherit; border: 1px solid var(--line-strong); border-radius: 6px; padding: 6px 8px; font: inherit; }
 .bul-panel input[type=checkbox] { accent-color: var(--rayleigh); }
+
+/* Local settings (Nov 2026) */
+.set-row { display: flex; gap: 12px; align-items: center; justify-content: space-between; max-width: 560px; margin: 8px 0; }
+.set-row > span { color: var(--starlight); }
+.set-row select, .set-row input, #set_theme { background: transparent; color: inherit; border: 1px solid var(--line-strong); border-radius: 6px; padding: 6px 8px; font: inherit; min-width: 14em; }
+.set-row select option, #set_theme option { color: #111; }
