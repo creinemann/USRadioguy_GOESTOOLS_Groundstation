@@ -799,12 +799,19 @@ function renderSettings()
 	// the server fills in the station's own profile (number 0) the first time
 	fetch('../dataHandler.php?type=preload', { cache: 'no-store' }).catch(function () {}).then(function () {
 		var profiles = readProfiles(), sel = parseInt(vgGetCookie('selectedProfile'), 10) || 0;
-		if (!profiles.length) { document.getElementById('setBody').innerHTML = '<p class="empty">Location settings need EMWIN data from this station. They appear once EMWIN bulletins are being received.</p>'; themeCard(document.getElementById('setBody'), true); return; }
+		if (config.showEmwinInfo === false || !profiles.length) {
+			document.getElementById('setBody').innerHTML = '<section class="bul-panel"><h2 class="h3" style="margin-top:0">Location</h2><p style="margin:0">' +
+				(config.showEmwinInfo === false
+					? 'Not available yet: the choices for location (NWS offices, forecast zones, cities, radar regions) come from the EMWIN bulletins this station receives, and none have arrived yet. Once the receiver is decoding a signal, this section fills in within a few minutes. The classic site\'s Local Settings page works the same way.'
+					: 'This browser did not keep the station\'s location settings. Check that cookies are allowed for this site, then reload.') +
+				'</p></section>';
+			themeCard(document.getElementById('setBody'), true); return;
+		}
 		if (sel >= profiles.length) sel = 0;
 		var p = profiles[sel], locked = sel == 0;
 		function field(id, label, input) { return '<label class="set-row"><span>' + label + '</span>' + input + '</label>'; }
 		function selectEl(id) { return '<select id="set_' + id + '"' + (locked ? ' disabled' : '') + '><option value="' + esc(p[id]) + '">' + esc(p[id] || '…') + '</option></select>'; }
-		document.getElementById('setBody').innerHTML = (config.showEmwinInfo === false ? '' :
+		document.getElementById('setBody').innerHTML = (
 			'<section class="bul-panel"><h2 class="h3" style="margin-top:0">Location</h2>' +
 			'<div class="reader-nav" style="margin-bottom:14px"><label class="set-row" style="margin:0"><span>Profile</span><select id="set_profile">' + profiles.map(function (o, i) {
 				return '<option value="' + i + '"' + (i == sel ? ' selected' : '') + '>' + esc(i == 0 ? 'Ground station defaults' : (o.city ? titleCaseKeep(o.city.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); })) : o.wxZone) + ', ' + o.stateAbbr) + '</option>';
@@ -823,7 +830,6 @@ function renderSettings()
 			(locked ? '' : '<div class="reader-nav" style="margin-top:16px"><span class="muted" id="set_msg"></span><button type="button" class="btn" id="set_save">Save</button></div>') +
 			'</section>');
 		themeCard(document.getElementById('setBody'));
-		if (config.showEmwinInfo === false) return;
 
 		function fill(id, items, value) {
 			var s = document.getElementById('set_' + id); if (!s) return;
