@@ -1,0 +1,7 @@
+/* Newsreader and Inter, SIL Open Font License (see fonts/OFL-*.txt) */
+@font-face { font-family: 'Newsreader'; font-weight: 300; font-style: normal; font-display: swap; src: url('fonts/newsreader-latin-300-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Newsreader'; font-weight: 400; font-style: normal; font-display: swap; src: url('fonts/newsreader-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Newsreader'; font-weight: 300; font-style: italic; font-display: swap; src: url('fonts/newsreader-latin-300-italic.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 400; font-display: swap; src: url('fonts/inter-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 500; font-display: swap; src: url('fonts/inter-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Inter'; font-weight: 600; font-display: swap; src: url('fonts/inter-latin-600-normal.woff2') format('woff2'); }

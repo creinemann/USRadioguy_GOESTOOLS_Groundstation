@@ -604,6 +604,7 @@ function columnCalc()
 {
 	mainContent = document.getElementById('mainContent');
 	if(selectedMenu == 'Ground-Station') { mainContent.className = "hudPage"; return; }   // full-width HUD page
+	if(selectedMenu == 'Earth') { mainContent.className = "earthHub"; return; }           // Living Earth home page
 	if(mainContent.childElementCount <= 2) mainContent.className = "singleCard";
 	else if(mainContent.childElementCount <= 4) mainContent.className = "dualCard";
 	else mainContent.className = "mainContent";
@@ -712,12 +713,17 @@ function menuSelect(menuSlug)
 	Object.keys(xhttp).forEach(thisxhttp => {xhttp[thisxhttp].abort();});
 	xhttp = [];
 	stopGroundStation();
+	if(earthHubTimer) { clearInterval(earthHubTimer); earthHubTimer = null; }
 	
 	//Load the selected menu
 	switch(selectedMenu)
 	{
 		case 'Ground-Station':
 		renderGroundStation();
+		break;
+		
+		case 'Earth':
+		renderEarthHub();
 		break;
 		
 		case 'Current-Weather':
@@ -2297,6 +2303,7 @@ window.addEventListener("load", function()
 			}
 			
 			//Render Menu Items
+			if(config.theme == 'earth') renderMenuItem('Earth', 'globe-americas', 'Earth');   // Living Earth theme home page
 			if(config.showCurrentWeather) renderMenuItem('Current-Weather', 'cloud', 'Current Weather');
 			Object.keys(config.categories).forEach((type) => { renderMenuItem(type, config.categories[type].icon, config.categories[type].title); });
 			if(config.showAdminInfo || config.showEmwinInfo) renderMenuItem('Other-EMWIN', 'align-left', 'Other EMWIN');
@@ -2664,4 +2671,76 @@ function hudShowPc(p)
 	document.getElementById('hudDisks').innerHTML = html;
 	hudPush(hudHistory.cpu, p.cpu);
 	hudDrawSpark('hudSparkCpu', hudHistory.cpu, 100);
+}
+
+// =====================================================================
+// USRadioguy "Living Earth" theme home page  (added November 2026)
+// The latest GeoColor full disk in the middle; every page of the site on
+// a slowly turning ring around it. Shown only with the Living Earth theme.
+// =====================================================================
+var earthHubTimer = null;
+function renderEarthHub()
+{
+	var esc = function(t) { return String(t).replace(/[&<>"]/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+	var st = window.STATION || {};
+	barTitle.innerHTML = "Earth";
+	
+	// the pages: every menu entry except this one
+	var pages = Array.prototype.slice.call(document.querySelectorAll('#sideBar .menuItem')).filter(function(m) { return m.id != 'menuItemEarth'; }).map(function(m) {
+		var icon = m.querySelector('i'), name = m.lastChild.textContent;
+		return { slug: m.id.replace('menuItem', ''), href: m.tagName == 'A' ? m.getAttribute('href') : '', icon: icon ? icon.className.replace(/\s*fa-fw\s*/, ' ') : 'fa fa-circle', name: name };
+	});
+	var n = pages.length;
+	var petals = pages.map(function(p, i) {
+		var a = (i / n) * 2 * Math.PI - Math.PI / 2, x = (Math.cos(a) * 0.40).toFixed(4), y = (Math.sin(a) * 0.40).toFixed(4);
+		var tone = /lab|space|solar|sun/i.test(p.slug + p.name) ? ' sky' : (/weather|emwin|hurricane|nws/i.test(p.slug + p.name) ? ' alt' : '');
+		var attrs = (p.href ? "href='" + esc(p.href) + "'" : "href='#' data-slug='" + esc(p.slug) + "'");
+		return "<a class='eh-petal" + tone + "' " + attrs + " style='--x: calc(var(--ring) * " + x + "); --y: calc(var(--ring) * " + y + ");' aria-label='" + esc(p.name) + "'>" +
+			"<i class='" + esc(p.icon) + "' aria-hidden='true'></i><span class='eh-label'>" + esc(p.name) + "</span></a>";
+	}).join('');
+	
+	// the globe: GeoColor first (GOES-19, GOES-18, Himawari-9), else any full disk
+	var abi = (config.categories.abi && config.categories.abi.data) || {};
+	var keys = Object.keys(abi);
+	var globes = ['fdGeoColor19', 'fdGeoColor18', 'fdhimgeo_18'].filter(function(k) { return abi[k]; });
+	if(!globes.length) globes = keys.filter(function(k) { return /GeoColor|geo/i.test(k); });
+	if(!globes.length) globes = keys.filter(function(k) { return /^fd/i.test(k); }).slice(0, 1);
+	
+	mainContent.innerHTML =
+		"<h1 class='eh-title'>" + esc(st.name || 'Ground Station') + (st.location ? "<em>Live from " + esc(st.location) + "</em>" : "") + "</h1>" +
+		"<div class='eh-wrap'>" +
+			"<button type='button' class='eh-globe' id='ehGlobe' aria-label='Open the full disk images'>" + (globes.length ? "<img id='ehGlobeImg' alt='' src='" + programPath + "lab/img.php?id=abi&subid=" + encodeURIComponent(globes[0]) + "&w=960'>" : "") + "</button>" +
+			"<nav class='eh-ring' aria-label='Pages'>" + petals + "</nav>" +
+		"</div>" +
+		"<p class='eh-caption' id='ehCaption'>" + (globes.length ? "" : "Images appear here once your station has received a full disk.") + "</p>";
+	columnCalc();
+	
+	mainContent.querySelectorAll('.eh-petal[data-slug]').forEach(function(a) {
+		a.addEventListener('click', function(e) { e.preventDefault(); menuSelect(a.dataset.slug); });
+	});
+	document.getElementById('ehGlobe').addEventListener('click', function() { menuSelect('abi'); });
+	if(!globes.length) return;
+	
+	// caption with the image time; turn through the satellites every 20 seconds
+	var at = 0;
+	function show(k)
+	{
+		var img = document.getElementById('ehGlobeImg'), cap = document.getElementById('ehCaption');
+		if(!img) return;
+		var next = new Image();
+		next.onload = function() { img.style.opacity = 0; setTimeout(function() { img.src = next.src; img.style.opacity = 1; }, 400); };
+		next.src = programPath + "lab/img.php?id=abi&subid=" + encodeURIComponent(k) + "&w=960";
+		var req = new XMLHttpRequest();
+		req.onload = function() {
+			try {
+				var m = JSON.parse(req.responseText), f = (m.images || [])[m.images.length - 1];
+				if(cap) cap.textContent = abi[k].title + (f ? ", " + new Date(f.timestamp * 1000).toLocaleString([], {weekday: 'short', hour: 'numeric', minute: '2-digit'}) : "");
+			} catch(e) { if(cap) cap.textContent = abi[k].title; }
+		};
+		req.open("GET", programPath + "dataHandler.php?type=metadata&id=abi&subid=" + encodeURIComponent(k), true);
+		req.send();
+	}
+	document.getElementById('ehGlobeImg').style.transition = 'opacity .4s, transform .6s';
+	show(globes[0]);
+	if(globes.length > 1) earthHubTimer = setInterval(function() { at = (at + 1) % globes.length; show(globes[at]); }, 20000);
 }
